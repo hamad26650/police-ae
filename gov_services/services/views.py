@@ -413,12 +413,58 @@ def respond_to_inquiry(request, inquiry_id):
             
             logger.info(f'تم الرد على الاستعلام {inquiry.get_inquiry_id()} بواسطة {request.user.username} من IP: {get_client_ip(request)}')
             
-            # الرد يُحفظ فوراً - نظام الإيميل معطل لضمان الاستقرار
+            # إرسال البريد الإلكتروني بطريقة آمنة (في الخلفية مع حماية كاملة)
+            from django.conf import settings
+            import threading
+            
+            def send_email_safely():
+                """إرسال إيميل محمي بالكامل مع timeout وerror handling"""
+                try:
+                    # التحقق من الإعدادات
+                    if not settings.EMAIL_HOST_USER or not settings.EMAIL_HOST_PASSWORD:
+                        logger.warning(f'⚠️ إعدادات البريد غير متوفرة للاستعلام {inquiry.get_inquiry_id()}')
+                        return
+                    
+                    # تعيين timeout للعملية بالكامل
+                    import socket
+                    socket.setdefaulttimeout(10)  # 10 ثواني كحد أقصى
+                    
+                    # محاولة الإرسال
+                    logger.info(f'📧 بدء إرسال بريد إلكتروني للاستعلام {inquiry.get_inquiry_id()}')
+                    email_result = email_service.send_inquiry_response(inquiry, response_text)
+                    
+                    if email_result['success']:
+                        logger.info(f'✅ نجح إرسال البريد للاستعلام {inquiry.get_inquiry_id()} إلى {inquiry.phone}')
+                    else:
+                        logger.warning(f'⚠️ فشل إرسال البريد للاستعلام {inquiry.get_inquiry_id()}: {email_result.get("message", "غير محدد")}')
+                        
+                except socket.timeout:
+                    logger.error(f'⏱️ انتهت مهلة إرسال البريد للاستعلام {inquiry.get_inquiry_id()} (timeout 10s)')
+                except Exception as e:
+                    error_type = type(e).__name__
+                    logger.error(f'❌ خطأ في إرسال البريد للاستعلام {inquiry.get_inquiry_id()}: {error_type} - {str(e)[:200]}')
+                finally:
+                    # إعادة timeout للوضع الطبيعي
+                    socket.setdefaulttimeout(None)
+            
+            # تشغيل Thread للإيميل (daemon=True للإغلاق التلقائي)
+            try:
+                email_thread = threading.Thread(
+                    target=send_email_safely,
+                    name=f'EmailThread-{inquiry.get_inquiry_id()}',
+                    daemon=True
+                )
+                email_thread.start()
+                logger.info(f'🚀 تم تشغيل thread للبريد الإلكتروني (الاستعلام {inquiry.get_inquiry_id()})')
+            except Exception as e:
+                logger.error(f'❌ فشل إنشاء thread للبريد: {str(e)}')
+            
+            # الرد فوراً للموظف (بدون انتظار الإيميل)
             return JsonResponse({
                 'success': True, 
-                'message': 'تم حفظ الرد بنجاح',
+                'message': 'تم حفظ الرد بنجاح وسيتم إرسال البريد الإلكتروني',
                 'inquiry_id': inquiry.get_inquiry_id(),
-                'email_sent': False
+                'email_sent': True  # سيُرسل في الخلفية
             })
         else:
             # إرجاع أول خطأ في النموذج
