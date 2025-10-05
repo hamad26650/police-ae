@@ -73,33 +73,47 @@ class InquiryForm(forms.Form):
         })
     )
     
-    phone_number = forms.CharField(
-        max_length=10,
-        min_length=10,
+    country_code = forms.CharField(
+        max_length=5,
         required=True,
-        validators=[phone_validator],
+        error_messages={
+            'required': 'يرجى اختيار رمز الدولة'
+        }
+    )
+    
+    phone_number = forms.CharField(
+        max_length=15,
+        min_length=7,
+        required=True,
         error_messages={
             'required': 'يرجى إدخال رقم الهاتف',
-            'min_length': 'رقم الهاتف يجب أن يتكون من 10 أرقام',
-            'max_length': 'رقم الهاتف يجب أن يتكون من 10 أرقام'
+            'min_length': 'رقم الهاتف قصير جداً',
+            'max_length': 'رقم الهاتف طويل جداً'
         },
         widget=forms.TextInput(attrs={
-            'class': 'form-input',
-            'placeholder': '05xxxxxxxx',
-            'pattern': '[0-9]{10}',
-            'maxlength': '10'
+            'class': 'form-input phone-number-input',
+            'placeholder': '501234567',
+            'pattern': '[0-9]{7,15}'
         })
     )
     
-    def clean_phone_number(self):
-        """تنظيف وتحقق إضافي من رقم الهاتف"""
-        phone = self.cleaned_data.get('phone_number')
-        if phone:
-            # إزالة أي فراغات أو رموز
-            phone = ''.join(filter(str.isdigit, phone))
-            if not phone.startswith(('05', '04')):
-                raise forms.ValidationError('رقم الهاتف يجب أن يبدأ بـ 05 أو 04')
-        return phone
+    def clean(self):
+        """دمج country_code مع phone_number"""
+        cleaned_data = super().clean()
+        country_code = cleaned_data.get('country_code')
+        phone_number = cleaned_data.get('phone_number')
+        
+        if country_code and phone_number:
+            # إزالة أي فراغات أو رموز من رقم الهاتف
+            phone_number = ''.join(filter(str.isdigit, phone_number))
+            
+            # دمج رمز الدولة مع رقم الهاتف
+            full_phone = f"{country_code}{phone_number}"
+            
+            # حفظ الرقم الكامل
+            cleaned_data['phone_number'] = full_phone
+        
+        return cleaned_data
     
     def clean_report_number(self):
         """تنظيف وتحقق إضافي من رقم البلاغ"""
