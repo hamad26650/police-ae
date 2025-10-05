@@ -9,7 +9,6 @@ from django.http import JsonResponse
 from .models import Service, SiteSettings, ServiceRequest, EmployeeProfile, Center, SMSMessage, Inquiry
 from .forms import InquiryForm, StaffLoginForm, InquiryResponseForm
 from .decorators import rate_limit, track_failed_login, log_user_activity, get_client_ip
-from .utils.sms import sms_service
 import logging
 
 # إعداد Logger
@@ -413,21 +412,10 @@ def respond_to_inquiry(request, inquiry_id):
             
             logger.info(f'تم الرد على الاستعلام {inquiry.get_inquiry_id()} بواسطة {request.user.username} من IP: {get_client_ip(request)}')
             
-            # إرسال SMS للمتعامل
-            sms_result = sms_service.send_inquiry_response(inquiry, response_text)
-            
-            if sms_result['success']:
-                logger.info(f'تم إرسال SMS للاستعلام {inquiry.get_inquiry_id()} - SID: {sms_result.get("sid")}')
-                response_message = 'تم إرسال الرد بنجاح وتم إبلاغ المتعامل عبر الرسائل النصية'
-            else:
-                logger.warning(f'فشل إرسال SMS للاستعلام {inquiry.get_inquiry_id()}: {sms_result.get("message")}')
-                response_message = f'تم إرسال الرد بنجاح ولكن فشل إرسال الرسالة النصية: {sms_result.get("message")}'
-            
             return JsonResponse({
                 'success': True, 
-                'message': response_message,
-                'inquiry_id': inquiry.get_inquiry_id(),
-                'sms_sent': sms_result['success']
+                'message': 'تم إرسال الرد بنجاح',
+                'inquiry_id': inquiry.get_inquiry_id()
             })
         else:
             # إرجاع أول خطأ في النموذج
