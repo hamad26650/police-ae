@@ -172,7 +172,7 @@ class Inquiry(models.Model):
     inquiry_type = models.CharField(max_length=20, choices=INQUIRY_TYPES, verbose_name="نوع الاستعلام")
     full_name = models.CharField(max_length=100, blank=True, verbose_name="الاسم الكامل")
     email = models.EmailField(blank=True, verbose_name="البريد الإلكتروني")
-    phone = models.CharField(max_length=20, verbose_name="رقم الهاتف")
+    phone = models.CharField(max_length=254, verbose_name="البريد الإلكتروني / رقم الهاتف")
     request_reference = models.CharField(max_length=50, blank=True, verbose_name="رقم مرجعي للطلب")
     message = models.TextField(blank=True, verbose_name="الرسالة")
     
