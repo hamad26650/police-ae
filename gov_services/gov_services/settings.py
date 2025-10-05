@@ -153,9 +153,10 @@ SESSION_SAVE_EVERY_REQUEST = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 # CSRF Protection
-CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript access if needed
 CSRF_COOKIE_SAMESITE = 'Lax'
 CSRF_USE_SESSIONS = False
+CSRF_COOKIE_SECURE = False  # Will be set to True in production
 
 # XSS Protection
 SECURE_BROWSER_XSS_FILTER = True
@@ -325,6 +326,12 @@ if 'RAILWAY_ENVIRONMENT' in os.environ or 'WEBSITE_HOSTNAME' in os.environ:
     allowed_host = os.environ.get('RAILWAY_PUBLIC_DOMAIN') or os.environ.get('WEBSITE_HOSTNAME')
     if allowed_host:
         ALLOWED_HOSTS = [allowed_host, 'localhost', '127.0.0.1']
+        
+        # CSRF Trusted Origins - مهم جداً لـ Railway!
+        CSRF_TRUSTED_ORIGINS = [
+            f'https://{allowed_host}',
+            f'http://{allowed_host}',
+        ]
     
     # Database
     if 'DATABASE_URL' in os.environ:
@@ -351,6 +358,8 @@ if 'RAILWAY_ENVIRONMENT' in os.environ or 'WEBSITE_HOSTNAME' in os.environ:
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+    CSRF_COOKIE_SAMESITE = 'Lax'
+    CSRF_COOKIE_HTTPONLY = False  # Important for Railway CSRF handling
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
