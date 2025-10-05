@@ -2,7 +2,7 @@
 builder = "NIXPACKS"
 
 [deploy]
-startCommand = "cd gov_services && python manage.py migrate --noinput && gunicorn gov_services.wsgi:application --bind 0.0.0.0:$PORT"
+startCommand = "cd gov_services && python manage.py collectstatic --noinput && python manage.py migrate --noinput && gunicorn gov_services.wsgi:application --bind 0.0.0.0:$PORT"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
 

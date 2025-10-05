@@ -327,8 +327,12 @@ if 'RAILWAY_ENVIRONMENT' in os.environ or 'WEBSITE_HOSTNAME' in os.environ:
     if 'whitenoise.middleware.WhiteNoiseMiddleware' not in MIDDLEWARE:
         MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
     
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+    # Use CompressedStaticFilesStorage instead of Manifest version to avoid issues
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
     STATIC_ROOT = BASE_DIR / 'staticfiles'
+    
+    # Allow WhiteNoise to serve all static files
+    WHITENOISE_AUTOREFRESH = True  # Only for development/testing
     
     # Security - Fix for Railway HTTPS
     # Railway uses a proxy, tell Django to trust X-Forwarded-Proto header
