@@ -179,75 +179,131 @@ PASSWORD_HASHERS = [
 ]
 
 # Logging للأحداث الأمنية
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
-            'style': '{',
+# Check if we're in production (Railway/Cloud)
+IS_PRODUCTION = 'RAILWAY_ENVIRONMENT' in os.environ or 'WEBSITE_HOSTNAME' in os.environ
+
+# Configure logging handlers based on environment
+if IS_PRODUCTION:
+    # Production: Use console logging only
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'verbose': {
+                'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+                'style': '{',
+            },
+            'simple': {
+                'format': '{levelname} {message}',
+                'style': '{',
+            },
         },
-        'simple': {
-            'format': '{levelname} {message}',
-            'style': '{',
+        'handlers': {
+            'console': {
+                'level': 'INFO',
+                'class': 'logging.StreamHandler',
+                'formatter': 'verbose'
+            },
         },
-    },
-    'filters': {
-        'require_debug_false': {
-            '()': 'django.utils.log.RequireDebugFalse',
+        'loggers': {
+            'django': {
+                'handlers': ['console'],
+                'level': 'INFO',
+                'propagate': False,
+            },
+            'django.security': {
+                'handlers': ['console'],
+                'level': 'WARNING',
+                'propagate': False,
+            },
+            'services': {
+                'handlers': ['console'],
+                'level': 'INFO',
+                'propagate': False,
+            },
+            'security': {
+                'handlers': ['console'],
+                'level': 'INFO',
+                'propagate': False,
+            },
+            'requests': {
+                'handlers': ['console'],
+                'level': 'INFO',
+                'propagate': False,
+            },
         },
-        'require_debug_true': {
-            '()': 'django.utils.log.RequireDebugTrue',
+    }
+else:
+    # Development: Use both console and file logging
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'verbose': {
+                'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+                'style': '{',
+            },
+            'simple': {
+                'format': '{levelname} {message}',
+                'style': '{',
+            },
         },
-    },
-    'handlers': {
-        'console': {
-            'level': 'INFO',
-            'filters': ['require_debug_true'],
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple'
+        'filters': {
+            'require_debug_false': {
+                '()': 'django.utils.log.RequireDebugFalse',
+            },
+            'require_debug_true': {
+                '()': 'django.utils.log.RequireDebugTrue',
+            },
         },
-        'file': {
-            'level': 'WARNING',
-            'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'logs' / 'django.log',
-            'formatter': 'verbose',
+        'handlers': {
+            'console': {
+                'level': 'INFO',
+                'filters': ['require_debug_true'],
+                'class': 'logging.StreamHandler',
+                'formatter': 'simple'
+            },
+            'file': {
+                'level': 'WARNING',
+                'class': 'logging.FileHandler',
+                'filename': BASE_DIR / 'logs' / 'django.log',
+                'formatter': 'verbose',
+            },
+            'security_file': {
+                'level': 'WARNING',
+                'class': 'logging.FileHandler',
+                'filename': BASE_DIR / 'logs' / 'security.log',
+                'formatter': 'verbose',
+            },
         },
-        'security_file': {
-            'level': 'WARNING',
-            'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'logs' / 'security.log',
-            'formatter': 'verbose',
+        'loggers': {
+            'django': {
+                'handlers': ['console', 'file'],
+                'level': 'INFO',
+                'propagate': False,
+            },
+            'django.security': {
+                'handlers': ['security_file'],
+                'level': 'WARNING',
+                'propagate': False,
+            },
+            'services': {
+                'handlers': ['console', 'file'],
+                'level': 'INFO',
+                'propagate': False,
+            },
+            'security': { # Custom logger for security events
+                'handlers': ['console', 'security_file'],
+                'level': 'INFO',
+                'propagate': False,
+            },
+            'requests': { # Custom logger for all requests
+                'handlers': ['console', 'file'],
+                'level': 'INFO',
+                'propagate': False,
+            },
         },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['console', 'file'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-        'django.security': {
-            'handlers': ['security_file'],
-            'level': 'WARNING',
-            'propagate': False,
-        },
-        'services': {
-            'handlers': ['console', 'file'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-        'security': { # Custom logger for security events
-            'handlers': ['console', 'security_file'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-        'requests': { # Custom logger for all requests
-            'handlers': ['console', 'file'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-    },
-}
+    }
 
 # ========== Railway/Production Configuration ==========
 if 'RAILWAY_ENVIRONMENT' in os.environ or 'WEBSITE_HOSTNAME' in os.environ:
@@ -281,7 +337,3 @@ if 'RAILWAY_ENVIRONMENT' in os.environ or 'WEBSITE_HOSTNAME' in os.environ:
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
-    
-    # Logging - disable file logging in production
-    LOGGING['handlers']['file']['class'] = 'logging.StreamHandler'
-    LOGGING['handlers']['security_file']['class'] = 'logging.StreamHandler'
