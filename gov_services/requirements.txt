@@ -24,3 +24,6 @@ whitenoise==6.6.0  # Static files serving
 
 # Utilities
 python-dotenv==1.0.0  # Environment variables
+
+# SMS
+twilio==9.0.4  # SMS/Voice API
