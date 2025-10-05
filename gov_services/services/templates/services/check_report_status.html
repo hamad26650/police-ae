@@ -1,0 +1,554 @@
+{% extends 'services/base.html' %}
+{% load static %}
+
+{% block title %}الاستعلام عن حالة البلاغ - وزارة الداخلية{% endblock %}
+
+{% block extra_css %}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+            padding: 120px 0 80px;
+            color: #ffffff;
+            text-align: center;
+        }
+
+        .hero-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .hero-icon {
+        width: 100px;
+        height: 100px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+        display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+        margin-bottom: 30px;
+        }
+
+        .hero-title {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+        }
+
+        .hero-description {
+            font-size: 1.2rem;
+            opacity: 0.95;
+            line-height: 1.6;
+        }
+
+        /* Form Section */
+        .form-section {
+            padding: 80px 0;
+        background: var(--bg-secondary);
+        }
+
+        .form-container {
+        max-width: 600px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .form-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 40px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .form-title {
+        font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: flex;
+            align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .form-label i {
+        color: #4a90e2;
+        font-size: 0.95rem;
+        }
+
+        .form-input {
+            width: 100%;
+        padding: 12px 15px;
+            border: 2px solid var(--border-color);
+        border-radius: 10px;
+            font-size: 1rem;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+            transition: all 0.3s ease;
+        font-family: 'Cairo', sans-serif;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+
+    select.form-input {
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234a90e2' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: left 15px center;
+        padding-left: 40px;
+    }
+
+    [data-theme="dark"] select.form-input {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2360a5fa' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    }
+
+    .form-hint {
+        display: block;
+        margin-top: 6px;
+        font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .submit-btn {
+        width: 100%;
+        padding: 15px;
+        background: linear-gradient(135deg, #4a90e2, #357abd);
+            color: white;
+            border: none;
+        border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(74, 144, 226, 0.4);
+        }
+
+    /* Status Section */
+        .status-section {
+            padding: 60px 0;
+        background: var(--bg-primary);
+        }
+
+        .status-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .status-title {
+        text-align: center;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 40px;
+        }
+
+        .status-grid {
+            display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        .status-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+        border: 1px solid var(--border-color);
+        }
+
+        .status-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+        display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        margin-bottom: 15px;
+    }
+
+    .status-open { background: #28a745; }
+    .status-progress { background: #ffc107; }
+    .status-closed { background: #6c757d; }
+
+        .status-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+
+        .status-description {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+    /* Responsive Design - Maintain layout, just scale down */
+    @media (max-width: 768px) {
+        .hero-section {
+            padding: 100px 0 60px;
+        }
+
+        .hero-container {
+            padding: 0 15px;
+        }
+
+        .hero-icon {
+            width: 80px;
+            height: 80px;
+            font-size: 2.5rem;
+            margin-bottom: 25px;
+        }
+
+        .hero-title {
+            font-size: 2.2rem;
+            line-height: 1.2;
+            margin-bottom: 15px;
+        }
+
+        .hero-description {
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .form-section {
+            padding: 60px 0;
+        }
+
+        .form-container {
+            padding: 0 15px;
+        }
+
+        .form-card {
+            padding: 30px;
+        }
+
+        .form-title {
+            font-size: 1.5rem;
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            font-size: 0.95rem;
+        }
+
+        .form-input {
+            padding: 11px 13px;
+            font-size: 0.95rem;
+        }
+
+        select.form-input {
+            padding-left: 35px;
+        }
+
+        .form-hint {
+            font-size: 0.8rem;
+        }
+
+        .form-btn {
+            padding: 13px;
+            font-size: 1rem;
+        }
+
+        .status-types-section {
+            padding: 50px 0;
+        }
+
+        .status-types-container {
+            padding: 0 15px;
+        }
+
+        .status-types-title {
+            font-size: 2rem;
+            margin-bottom: 35px;
+        }
+
+        .status-types-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .status-card {
+            padding: 25px;
+        }
+
+        .status-icon {
+            width: 50px;
+            height: 50px;
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+        }
+
+        .status-name {
+            font-size: 1.1rem;
+        }
+
+        .status-description {
+            font-size: 0.9rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .hero-section {
+            padding: 80px 0 50px;
+        }
+
+        .hero-container {
+            padding: 0 12px;
+        }
+
+        .hero-icon {
+            width: 70px;
+            height: 70px;
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        .hero-title {
+            font-size: 1.8rem;
+            line-height: 1.2;
+            margin-bottom: 12px;
+        }
+
+        .hero-description {
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .form-section {
+            padding: 50px 0;
+        }
+
+        .form-container {
+            padding: 0 12px;
+        }
+
+        .form-card {
+            padding: 25px;
+        }
+
+        .form-title {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+        }
+
+        .form-input {
+            padding: 10px 12px;
+            font-size: 0.9rem;
+        }
+
+        select.form-input {
+            padding-left: 32px;
+        }
+
+        .form-hint {
+            font-size: 0.75rem;
+        }
+
+        .form-btn {
+            padding: 12px;
+            font-size: 0.95rem;
+        }
+
+        .status-types-section {
+            padding: 40px 0;
+        }
+
+        .status-types-container {
+            padding: 0 12px;
+        }
+
+        .status-types-title {
+            font-size: 1.6rem;
+            margin-bottom: 30px;
+        }
+
+        .status-types-grid {
+            gap: 18px;
+        }
+
+        .status-card {
+            padding: 20px;
+        }
+
+        .status-icon {
+            width: 45px;
+            height: 45px;
+            font-size: 1.2rem;
+            margin-bottom: 12px;
+        }
+
+        .status-name {
+            font-size: 1rem;
+            margin-bottom: 8px;
+        }
+
+        .status-description {
+            font-size: 0.85rem;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-container">
+            <div class="hero-icon">
+                <i class="fas fa-search"></i>
+            </div>
+            <h1 class="hero-title">الاستعلام عن حالة البلاغ</h1>
+            <p class="hero-description">
+                تابع حالة بلاغك المقدم سابقاً واطلع على آخر التحديثات والإجراءات المتخذة
+            </p>
+        </div>
+    </section>
+
+    <!-- Form Section -->
+    <section class="form-section">
+        <div class="form-container">
+            <div class="form-card">
+                <h2 class="form-title">نموذج الاستعلام</h2>
+                
+                {% if messages %}
+                    {% for message in messages %}
+                        <div style="padding: 15px; background: {% if message.tags == 'success' %}#d4edda{% else %}#f8d7da{% endif %}; border: 1px solid {% if message.tags == 'success' %}#c3e6cb{% else %}#f5c6cb{% endif %}; border-radius: 10px; margin-bottom: 20px; color: {% if message.tags == 'success' %}#155724{% else %}#721c24{% endif %}; text-align: center;">
+                            <i class="fas {% if message.tags == 'success' %}fa-check-circle{% else %}fa-exclamation-triangle{% endif %}"></i>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-building"></i> مركز الشرطة المختص
+                        </label>
+                        <select name="police_center" class="form-input" required>
+                            <option value="">-- اختر مركز الشرطة --</option>
+                            <option value="مركز شرطة البحيرة">مركز شرطة البحيرة</option>
+                            <option value="مركز شرطة القاسمية">مركز شرطة القاسمية</option>
+                            <option value="مركز شرطة الخان">مركز شرطة الخان</option>
+                            <option value="مركز شرطة السجع">مركز شرطة السجع</option>
+                            <option value="مركز شرطة الذيد">مركز شرطة الذيد</option>
+                            <option value="مركز شرطة كلباء">مركز شرطة كلباء</option>
+                            <option value="مركز شرطة خورفكان">مركز شرطة خورفكان</option>
+                            <option value="مركز شرطة دبا الحصن">مركز شرطة دبا الحصن</option>
+                        </select>
+                        <small class="form-hint">اختر مركز الشرطة الذي قدمت لديه البلاغ</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-file-alt"></i> رقم البلاغ
+                        </label>
+                        <input type="number" name="report_number" class="form-input" placeholder="أدخل رقم البلاغ (1-9999)" min="1" max="9999" required>
+                        <small class="form-hint">الرقم المسجل في إيصال البلاغ (من 1 إلى 9999)</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-calendar-alt"></i> السنة
+                        </label>
+                        <select name="report_year" class="form-input" required>
+                            <option value="">-- اختر السنة --</option>
+                            <option value="2025">2025</option>
+                            <option value="2024">2024</option>
+                            <option value="2023">2023</option>
+                            <option value="2022">2022</option>
+                            <option value="2021">2021</option>
+                            <option value="2020">2020</option>
+                        </select>
+                        <small class="form-hint">السنة الميلادية التي قدمت فيها البلاغ</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-phone"></i> رقم الهاتف
+                        </label>
+                        <input type="tel" name="phone_number" class="form-input" placeholder="05xxxxxxxx" required>
+                        <small class="form-hint">رقم الهاتف المسجل في البلاغ</small>
+                    </div>
+
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-search"></i> استعلام عن البلاغ
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Status Examples Section -->
+    <section class="status-section">
+        <div class="status-container">
+            <h3 class="status-title">حالات البلاغات المختلفة</h3>
+            <div class="status-grid">
+                <div class="status-card">
+                    <div class="status-icon status-open">
+                        <i class="fas fa-folder-open"></i>
+                    </div>
+                    <h4 class="status-name">طلب فتح</h4>
+                    <p class="status-description">
+                        تم تسجيل الطلب وجارٍ فتح ملفه لدى الجهة المختصة
+                    </p>
+                </div>
+                
+                <div class="status-card">
+                    <div class="status-icon status-progress">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <h4 class="status-name">قيد الإجراء</h4>
+                    <p class="status-description">
+                        الطلب تحت الدراسة أو التنفيذ، وقد تُطلب منك معلومات إضافية
+                    </p>
+                </div>
+                
+                <div class="status-card">
+                    <div class="status-icon status-closed">
+                        <i class="fas fa-archive"></i>
+                    </div>
+                    <h4 class="status-name">محفوظ</h4>
+                    <p class="status-description">
+                        تم حفظ الطلب دون إجراء إضافي حالياً (راجع الملاحظات إن وُجدت)
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

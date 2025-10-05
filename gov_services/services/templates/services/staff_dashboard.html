@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم الموظفين - بوابة الخدمات الحكومية</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-tertiary: #f1f5f9;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --text-white: #ffffff;
+            --accent-color: #73b9ff;
+            --accent-hover: #5ba3f5;
+            --border-color: #e2e8f0;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --shadow-light: rgba(115, 185, 255, 0.3);
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --warning-color: #f59e0b;
+            --info-color: #3b82f6;
+            --card-bg: #ffffff;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --text-white: #ffffff;
+            --accent-color: #60a5fa;
+            --accent-hover: #3b82f6;
+            --border-color: #334155;
+            --shadow-color: rgba(0, 0, 0, 0.5);
+            --shadow-light: rgba(96, 165, 250, 0.3);
+            --success-color: #34d399;
+            --error-color: #f87171;
+            --warning-color: #fbbf24;
+            --info-color: #60a5fa;
+            --card-bg: #1e293b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+            line-height: 1.6;
+        }
+
+        .dashboard-header {
+            background: var(--card-bg);
+            padding: 1.2rem 2rem;
+            box-shadow: 0 2px 10px var(--shadow-color);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #73b9ff, #5ba3f5);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.3rem;
+            box-shadow: 0 4px 12px rgba(115, 185, 255, 0.3);
+        }
+
+        .logo-text h1 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .logo-text p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .theme-toggle-btn {
+            width: 45px;
+            height: 45px;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle-btn:hover {
+            border-color: var(--accent-color);
+            transform: rotate(180deg);
+            box-shadow: 0 4px 12px var(--shadow-light);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #73b9ff, #5ba3f5);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+        }
+
+        .user-details h3 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .user-details p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .logout-btn {
+            padding: 0.6rem 1.2rem;
+            background: var(--error-color);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        .logout-btn:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        .logout-btn i {
+            margin-left: 6px;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 10px var(--shadow-color);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px var(--shadow-color);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .stat-title {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .stat-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .stat-icon.all { background: linear-gradient(135deg, #73b9ff, #5ba3f5); }
+        .stat-icon.pending { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+        .stat-icon.resolved { background: linear-gradient(135deg, #34d399, #10b981); }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        /* Search Section */
+        .search-section {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 10px var(--shadow-color);
+            margin-bottom: 2rem;
+        }
+
+        .search-form {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+        }
+
+        .search-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .search-label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .search-input {
+            padding: 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 4px rgba(115, 185, 255, 0.1);
+        }
+
+        .search-btn {
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #73b9ff, #5ba3f5);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            font-family: 'Cairo', sans-serif;
+            white-space: nowrap;
+        }
+
+        .search-btn:hover {
+            background: linear-gradient(135deg, #5ba3f5, #4a90e2);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px var(--shadow-light);
+        }
+
+        .search-btn i {
+            margin-left: 8px;
+        }
+
+        /* Inquiries Table */
+        .inquiries-section {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 10px var(--shadow-color);
+        }
+
+        .section-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .inquiries-table-wrapper {
+            overflow-x: auto;
+        }
+
+        .inquiries-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .inquiries-table th,
+        .inquiries-table td {
+            padding: 1rem;
+            text-align: right;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .inquiries-table th {
+            background: var(--bg-tertiary);
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .inquiries-table td {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .inquiries-table tbody tr {
+            transition: all 0.3s ease;
+        }
+
+        .inquiries-table tbody tr:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .status-badge.pending {
+            background: rgba(251, 191, 36, 0.15);
+            color: #f59e0b;
+        }
+
+        .status-badge.resolved {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+        }
+
+        .view-btn {
+            padding: 0.6rem 1.2rem;
+            background: linear-gradient(135deg, #73b9ff, #5ba3f5);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            font-family: 'Cairo', sans-serif;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .view-btn:hover {
+            background: linear-gradient(135deg, #5ba3f5, #4a90e2);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px var(--shadow-light);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px var(--shadow-color);
+            animation: slideUp 0.3s ease;
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .modal-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .modal-title-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #73b9ff, #5ba3f5);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .modal-close {
+            width: 40px;
+            height: 40px;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--error-color);
+            border-color: var(--error-color);
+            color: white;
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .detail-label {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .detail-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            padding: 1rem;
+            background: var(--bg-tertiary);
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .response-textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: 'Cairo', sans-serif;
+            resize: vertical;
+            transition: all 0.3s ease;
+            line-height: 1.6;
+            min-height: 120px;
+        }
+
+        .response-textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 4px rgba(115, 185, 255, 0.1);
+        }
+
+        .response-textarea::placeholder {
+            color: var(--text-muted);
+        }
+
+        .modal-footer {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 2px solid var(--border-color);
+            display: flex;
+            gap: 1rem;
+        }
+
+        .respond-btn {
+            flex: 1;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #34d399, #10b981);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            font-family: 'Cairo', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.8rem;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .respond-btn:hover {
+            background: linear-gradient(135deg, #10b981, #059669);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.5);
+        }
+
+        .respond-btn.resolved {
+            background: linear-gradient(135deg, #94a3b8, #64748b);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .respond-btn.resolved:hover {
+            transform: none;
+        }
+
+        /* Messages */
+        .messages-container {
+            position: fixed;
+            top: 5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .message {
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 4px 12px var(--shadow-color);
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .message.error {
+            background: var(--error-color);
+            color: white;
+        }
+
+        .message i {
+            font-size: 1.3rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-header {
+                padding: 1rem;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: stretch;
+            }
+
+            .header-left {
+                justify-content: space-between;
+            }
+
+            .header-right {
+                justify-content: space-between;
+            }
+
+            .logo-text h1 {
+                font-size: 1.2rem;
+            }
+
+            .user-info {
+                padding: 0.5rem 0.8rem;
+            }
+
+            .dashboard-container {
+                padding: 0 1rem;
+                margin: 1.5rem auto;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .search-form {
+                flex-direction: column;
+            }
+
+            .inquiries-table {
+                font-size: 0.85rem;
+            }
+
+            .inquiries-table th,
+            .inquiries-table td {
+                padding: 0.7rem 0.5rem;
+            }
+
+            .modal-content {
+                padding: 1.5rem;
+            }
+
+            .modal-footer {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1.1rem;
+            }
+
+            .logo-text h1 {
+                font-size: 1rem;
+            }
+
+            .logo-text p {
+                font-size: 0.75rem;
+            }
+
+            .user-avatar {
+                width: 35px;
+                height: 35px;
+                font-size: 0.9rem;
+            }
+
+            .user-details h3 {
+                font-size: 0.85rem;
+            }
+
+            .user-details p {
+                font-size: 0.75rem;
+            }
+
+            .logout-btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.85rem;
+            }
+
+            .stat-value {
+                font-size: 2rem;
+            }
+
+            .section-title {
+                font-size: 1.2rem;
+            }
+
+            .modal-title {
+                font-size: 1.3rem;
+            }
+
+            .detail-value {
+                font-size: 1rem;
+            }
+
+            .response-textarea {
+                padding: 0.8rem;
+                font-size: 0.95rem;
+                min-height: 100px;
+            }
+
+            .respond-btn {
+                padding: 0.9rem 1.5rem;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Messages -->
+    {% if messages %}
+    <div class="messages-container">
+        {% for message in messages %}
+        <div class="message {{ message.tags }}">
+            <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+            <span>{{ message }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Header -->
+    <header class="dashboard-header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="logo-text">
+                        <h1>لوحة تحكم الموظفين</h1>
+                        <p>الاستعلامات عن البلاغات</p>
+                    </div>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="theme-toggle-btn" onclick="toggleTheme()" title="تبديل الوضع">
+                    <i class="fas fa-moon" id="theme-icon"></i>
+                </button>
+                <div class="user-info">
+                    <div class="user-avatar">
+                        {{ request.user.first_name.0|default:request.user.username.0|upper }}
+                    </div>
+                    <div class="user-details">
+                        <h3>{{ request.user.get_full_name|default:request.user.username }}</h3>
+                        <p>{{ employee_profile.get_role_display }}</p>
+                    </div>
+                </div>
+                <a href="{% url 'services:staff_logout' %}">
+                    <button class="logout-btn">
+                        تسجيل الخروج
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Dashboard Container -->
+    <div class="dashboard-container">
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">إجمالي الاستعلامات</span>
+                    <div class="stat-icon all">
+                        <i class="fas fa-question-circle"></i>
+                    </div>
+                </div>
+                <div class="stat-value">{{ total_inquiries }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">قيد الانتظار</span>
+                    <div class="stat-icon pending">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                </div>
+                <div class="stat-value">{{ pending_inquiries }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">تم الرد</span>
+                    <div class="stat-icon resolved">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                </div>
+                <div class="stat-value">{{ resolved_inquiries }}</div>
+            </div>
+        </div>
+
+        <!-- Search Section -->
+        <div class="search-section">
+            <form method="get" action="" class="search-form">
+                <div class="search-group">
+                    <label class="search-label">البحث (رقم البلاغ / رقم الهاتف)</label>
+                    <input type="text" name="search" class="search-input" placeholder="ابحث برقم البلاغ أو رقم الهاتف..." value="{{ search_query|default:'' }}">
+                </div>
+                <button type="submit" class="search-btn">
+                    بحث
+                    <i class="fas fa-search"></i>
+                </button>
+            </form>
+        </div>
+
+        <!-- Inquiries Table -->
+        <div class="inquiries-section">
+            <div class="section-header">
+                <h2 class="section-title">الاستعلامات الواردة</h2>
+            </div>
+
+            {% if inquiries %}
+            <div class="inquiries-table-wrapper">
+                <table class="inquiries-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>مركز الشرطة</th>
+                            <th>رقم البلاغ</th>
+                            <th>السنة</th>
+                            <th>رقم الهاتف</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for inquiry in inquiries %}
+                        <tr>
+                            <td><strong>{{ forloop.counter }}</strong></td>
+                            <td>{{ inquiry.police_center }}</td>
+                            <td><strong>#{{ inquiry.report_number }}</strong></td>
+                            <td>{{ inquiry.report_year }}</td>
+                            <td>{{ inquiry.phone }}</td>
+                            <td>
+                                {% if inquiry.is_resolved %}
+                                    <span class="status-badge resolved">
+                                        <i class="fas fa-check-circle"></i> تم الرد
+                                    </span>
+                                {% else %}
+                                    <span class="status-badge pending">
+                                        <i class="fas fa-clock"></i> قيد الانتظار
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button class="view-btn" onclick="openModal('{{ inquiry.id }}', '{{ inquiry.police_center }}', '{{ inquiry.report_number }}', '{{ inquiry.report_year }}', '{{ inquiry.phone }}', '{{ inquiry.created_at|date:'d/m/Y - H:i' }}', '{{ inquiry.response|escapejs }}', {{ inquiry.is_resolved|yesno:'true,false' }}, '{% if inquiry.responded_by %}{{ inquiry.responded_by.get_full_name|default:inquiry.responded_by.username }}{% endif %}', '{% if inquiry.resolved_at %}{{ inquiry.resolved_at|date:'d/m/Y - H:i' }}{% endif %}')">
+                                    <i class="fas fa-eye"></i>
+                                    عرض
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <h3>لا توجد استعلامات</h3>
+                <p>لم يتم العثور على أي استعلامات</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Inquiry Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <div class="modal-title-icon">
+                        <i class="fas fa-question-circle"></i>
+                    </div>
+                    <span>تفاصيل الاستعلام</span>
+                </div>
+                <div class="modal-close" onclick="closeModal()">
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="detail-item">
+                    <div class="detail-label">مركز الشرطة</div>
+                    <div class="detail-value" id="modalPoliceCenter">---</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">رقم البلاغ</div>
+                    <div class="detail-value" id="modalReportNumber">---</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">السنة</div>
+                    <div class="detail-value" id="modalReportYear">---</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">رقم الهاتف</div>
+                    <div class="detail-value" id="modalPhone">---</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">تاريخ الاستعلام</div>
+                    <div class="detail-value" id="modalCreatedAt">---</div>
+                </div>
+                <div class="detail-item" id="existingResponseContainer" style="display: none;">
+                    <div class="detail-label">الرد السابق</div>
+                    <div class="detail-value" id="modalExistingResponse">---</div>
+                </div>
+                <div class="detail-item" id="resolvedInfoContainer" style="display: none;">
+                    <div class="detail-label">تاريخ الرد</div>
+                    <div class="detail-value" id="modalResolvedAt">---</div>
+                </div>
+                <div class="detail-item" id="responsedByContainer" style="display: none;">
+                    <div class="detail-label">رد بواسطة</div>
+                    <div class="detail-value" id="modalResponsedBy">---</div>
+                </div>
+                <div class="detail-item" id="responseFormContainer">
+                    <div class="detail-label">الرد على الاستعلام</div>
+                    <textarea id="responseText" class="response-textarea" placeholder="اكتب ردك على الاستعلام..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer" id="modalFooter">
+                <button type="button" class="respond-btn" id="respondBtn" onclick="submitResponse()">
+                    <i class="fas fa-paper-plane"></i>
+                    إرسال الرد
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentInquiryId = null;
+        let currentInquiryResolved = false;
+
+        function openModal(id, policeCenter, reportNumber, reportYear, phone, createdAt, response, isResolved, responsedBy, resolvedAt) {
+            currentInquiryId = id;
+            currentInquiryResolved = isResolved;
+            
+            document.getElementById('modalPoliceCenter').textContent = policeCenter;
+            document.getElementById('modalReportNumber').textContent = '#' + reportNumber;
+            document.getElementById('modalReportYear').textContent = reportYear;
+            document.getElementById('modalPhone').textContent = phone;
+            document.getElementById('modalCreatedAt').textContent = createdAt;
+            
+            // Handle existing response
+            const existingResponseContainer = document.getElementById('existingResponseContainer');
+            const responseFormContainer = document.getElementById('responseFormContainer');
+            const resolvedInfoContainer = document.getElementById('resolvedInfoContainer');
+            const responsedByContainer = document.getElementById('responsedByContainer');
+            const respondBtn = document.getElementById('respondBtn');
+            
+            if (isResolved && response) {
+                existingResponseContainer.style.display = 'flex';
+                document.getElementById('modalExistingResponse').textContent = response;
+                resolvedInfoContainer.style.display = 'flex';
+                document.getElementById('modalResolvedAt').textContent = resolvedAt || '---';
+                responsedByContainer.style.display = 'flex';
+                document.getElementById('modalResponsedBy').textContent = responsedBy || '---';
+                responseFormContainer.style.display = 'none';
+                respondBtn.style.display = 'none';
+            } else {
+                existingResponseContainer.style.display = 'none';
+                resolvedInfoContainer.style.display = 'none';
+                responsedByContainer.style.display = 'none';
+                responseFormContainer.style.display = 'flex';
+                document.getElementById('responseText').value = '';
+                respondBtn.style.display = 'flex';
+                respondBtn.classList.remove('resolved');
+            }
+            
+            document.getElementById('modalOverlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+            document.body.style.overflow = 'auto';
+            currentInquiryId = null;
+            currentInquiryResolved = false;
+        }
+
+        function submitResponse() {
+            const responseText = document.getElementById('responseText').value.trim();
+            
+            if (!responseText) {
+                alert('الرجاء كتابة نص الرد');
+                return;
+            }
+            
+            if (!currentInquiryId) {
+                alert('خطأ: لم يتم تحديد الاستعلام');
+                return;
+            }
+            
+            if (currentInquiryResolved) {
+                alert('تم الرد على هذا الاستعلام مسبقاً');
+                return;
+            }
+            
+            // إرسال الرد إلى الخادم
+            fetch(`/staff/respond-inquiry/${currentInquiryId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: `response=${encodeURIComponent(responseText)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('تم إرسال الرد بنجاح');
+                    closeModal();
+                    location.reload();
+                } else {
+                    alert('خطأ: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('حدث خطأ أثناء إرسال الرد');
+            });
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.getElementById('theme-icon');
+            
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                themeIcon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                themeIcon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Load saved theme on page load
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            const themeIcon = document.getElementById('theme-icon');
+            
+            if (savedTheme === 'dark') {
+                document.body.setAttribute('data-theme', 'dark');
+                if (themeIcon) themeIcon.className = 'fas fa-sun';
+            }
+        })();
+
+        // Auto-dismiss messages after 5 seconds
+        setTimeout(() => {
+            const messages = document.querySelectorAll('.message');
+            messages.forEach(msg => {
+                msg.style.animation = 'slideDown 0.3s ease reverse';
+                setTimeout(() => msg.remove(), 300);
+            });
+        }, 5000);
+    </script>
+</body>
+</html>
