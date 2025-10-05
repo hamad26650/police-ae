@@ -9,6 +9,7 @@ from django.http import JsonResponse
 from .models import Service, SiteSettings, ServiceRequest, EmployeeProfile, Center, SMSMessage, Inquiry
 from .forms import InquiryForm, StaffLoginForm, InquiryResponseForm
 from .decorators import rate_limit, track_failed_login, log_user_activity, get_client_ip
+from .utils.email_service import email_service
 import logging
 
 # إعداد Logger
@@ -76,7 +77,7 @@ def check_report_status(request):
             police_center = form.cleaned_data['police_center']
             report_number = form.cleaned_data['report_number']
             report_year = form.cleaned_data['report_year']
-            phone_number = form.cleaned_data['phone_number']
+            email = form.cleaned_data['email']
             
             # الحصول على IP
             ip = get_client_ip(request)
@@ -87,12 +88,12 @@ def check_report_status(request):
                 police_center=police_center,
                 report_number=str(report_number),
                 report_year=str(report_year),
-                phone=phone_number,
+                phone=email,  # نستخدم حقل phone لحفظ الإيميل
                 message=f"استعلام عن بلاغ رقم {report_number}/{report_year} في {police_center}"
             )
             
-            logger.info(f'استعلام جديد: {inquiry.get_inquiry_id()} - الهاتف: {phone_number} - IP: {ip}')
-            messages.success(request, f'تم استلام طلب الاستعلام برقم {inquiry.get_inquiry_id()} وسيتم التواصل معكم قريباً عبر الرقم {phone_number}')
+            logger.info(f'استعلام جديد: {inquiry.get_inquiry_id()} - الإيميل: {email} - IP: {ip}')
+            messages.success(request, f'تم استلام طلب الاستعلام برقم {inquiry.get_inquiry_id()} وسيتم التواصل معكم قريباً عبر البريد الإلكتروني {email}')
             return redirect('services:check_report_status')
         else:
             # عرض أخطاء النموذج
@@ -412,10 +413,21 @@ def respond_to_inquiry(request, inquiry_id):
             
             logger.info(f'تم الرد على الاستعلام {inquiry.get_inquiry_id()} بواسطة {request.user.username} من IP: {get_client_ip(request)}')
             
+            # إرسال البريد الإلكتروني للمتعامل
+            email_result = email_service.send_inquiry_response(inquiry, response_text)
+            
+            if email_result['success']:
+                logger.info(f'تم إرسال بريد إلكتروني للاستعلام {inquiry.get_inquiry_id()}')
+                response_message = 'تم إرسال الرد بنجاح وتم إبلاغ المتعامل عبر البريد الإلكتروني'
+            else:
+                logger.warning(f'فشل إرسال البريد الإلكتروني للاستعلام {inquiry.get_inquiry_id()}: {email_result.get("message")}')
+                response_message = f'تم إرسال الرد بنجاح ولكن فشل إرسال البريد الإلكتروني: {email_result.get("message")}'
+            
             return JsonResponse({
                 'success': True, 
-                'message': 'تم إرسال الرد بنجاح',
-                'inquiry_id': inquiry.get_inquiry_id()
+                'message': response_message,
+                'inquiry_id': inquiry.get_inquiry_id(),
+                'email_sent': email_result['success']
             })
         else:
             # إرجاع أول خطأ في النموذج

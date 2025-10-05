@@ -556,25 +556,10 @@
 
                     <div class="form-group">
                         <label class="form-label">
-                            <i class="fas fa-phone"></i> رقم الهاتف
+                            <i class="fas fa-envelope"></i> البريد الإلكتروني
                         </label>
-                        <div class="phone-input-container">
-                            <select name="country_code" class="country-code-select" id="countryCodeSelect">
-                                <option value="+971" data-flag="🇦🇪" selected>🇦🇪 +971</option>
-                                <option value="+966" data-flag="🇸🇦">🇸🇦 +966</option>
-                                <option value="+965" data-flag="🇰🇼">🇰🇼 +965</option>
-                                <option value="+974" data-flag="🇶🇦">🇶🇦 +974</option>
-                                <option value="+968" data-flag="🇴🇲">🇴🇲 +968</option>
-                                <option value="+973" data-flag="🇧🇭">🇧🇭 +973</option>
-                                <option value="+20" data-flag="🇪🇬">🇪🇬 +20</option>
-                                <option value="+962" data-flag="🇯🇴">🇯🇴 +962</option>
-                                <option value="+961" data-flag="🇱🇧">🇱🇧 +961</option>
-                                <option value="+1" data-flag="🇺🇸">🇺🇸 +1</option>
-                                <option value="+44" data-flag="🇬🇧">🇬🇧 +44</option>
-                            </select>
-                            <input type="tel" name="phone_number" class="form-input phone-number-input" placeholder="501234567" required pattern="[0-9]{7,15}">
-                    </div>
-                        <small class="form-hint">اختر رمز الدولة وأدخل رقم الهاتف بدون الصفر</small>
+                        <input type="email" name="email" class="form-input" placeholder="example@email.com" required dir="ltr">
+                        <small class="form-hint">سيتم إرسال الرد على هذا البريد الإلكتروني</small>
                     </div>
 
                     <button type="submit" class="submit-btn">

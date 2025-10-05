@@ -73,47 +73,26 @@ class InquiryForm(forms.Form):
         })
     )
     
-    country_code = forms.CharField(
-        max_length=5,
+    email = forms.EmailField(
+        max_length=254,
         required=True,
         error_messages={
-            'required': 'يرجى اختيار رمز الدولة'
-        }
-    )
-    
-    phone_number = forms.CharField(
-        max_length=15,
-        min_length=7,
-        required=True,
-        error_messages={
-            'required': 'يرجى إدخال رقم الهاتف',
-            'min_length': 'رقم الهاتف قصير جداً',
-            'max_length': 'رقم الهاتف طويل جداً'
+            'required': 'يرجى إدخال البريد الإلكتروني',
+            'invalid': 'البريد الإلكتروني غير صحيح'
         },
-        widget=forms.TextInput(attrs={
-            'class': 'form-input phone-number-input',
-            'placeholder': '501234567',
-            'pattern': '[0-9]{7,15}'
+        widget=forms.EmailInput(attrs={
+            'class': 'form-input',
+            'placeholder': 'example@email.com',
+            'dir': 'ltr'
         })
     )
     
-    def clean(self):
-        """دمج country_code مع phone_number"""
-        cleaned_data = super().clean()
-        country_code = cleaned_data.get('country_code')
-        phone_number = cleaned_data.get('phone_number')
-        
-        if country_code and phone_number:
-            # إزالة أي فراغات أو رموز من رقم الهاتف
-            phone_number = ''.join(filter(str.isdigit, phone_number))
-            
-            # دمج رمز الدولة مع رقم الهاتف
-            full_phone = f"{country_code}{phone_number}"
-            
-            # حفظ الرقم الكامل
-            cleaned_data['phone_number'] = full_phone
-        
-        return cleaned_data
+    def clean_email(self):
+        """تنظيف وتحقق من البريد الإلكتروني"""
+        email = self.cleaned_data.get('email')
+        if email:
+            email = email.lower().strip()
+        return email
     
     def clean_report_number(self):
         """تنظيف وتحقق إضافي من رقم البلاغ"""
