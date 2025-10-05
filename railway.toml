@@ -1,0 +1,9 @@
+[build]
+builder = "NIXPACKS"
+buildCommand = "cd gov_services && pip install -r requirements.txt && python manage.py collectstatic --noinput"
+
+[deploy]
+startCommand = "cd gov_services && gunicorn gov_services.wsgi:application --bind 0.0.0.0:$PORT"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+
