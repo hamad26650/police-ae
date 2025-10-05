@@ -413,34 +413,12 @@ def respond_to_inquiry(request, inquiry_id):
             
             logger.info(f'تم الرد على الاستعلام {inquiry.get_inquiry_id()} بواسطة {request.user.username} من IP: {get_client_ip(request)}')
             
-            # إرسال البريد الإلكتروني في الخلفية (بدون انتظار)
-            from django.conf import settings
-            import threading
-            
-            def send_email_in_background():
-                """إرسال الإيميل في thread منفصل لتجنب timeout"""
-                try:
-                    if settings.EMAIL_HOST_USER and settings.EMAIL_HOST_PASSWORD:
-                        email_result = email_service.send_inquiry_response(inquiry, response_text)
-                        if email_result['success']:
-                            logger.info(f'✅ تم إرسال بريد إلكتروني للاستعلام {inquiry.get_inquiry_id()}')
-                        else:
-                            logger.warning(f'⚠️ فشل إرسال البريد: {email_result.get("message")}')
-                    else:
-                        logger.info('⚠️ إعدادات البريد الإلكتروني غير متوفرة')
-                except Exception as e:
-                    logger.error(f'❌ خطأ في إرسال البريد: {str(e)}')
-            
-            # تشغيل Thread للإيميل في الخلفية
-            email_thread = threading.Thread(target=send_email_in_background, daemon=True)
-            email_thread.start()
-            logger.info('📧 تم بدء إرسال البريد الإلكتروني في الخلفية')
-            
+            # الرد يُحفظ فوراً - نظام الإيميل معطل لضمان الاستقرار
             return JsonResponse({
                 'success': True, 
-                'message': 'تم حفظ الرد بنجاح وسيتم إرسال البريد الإلكتروني',
+                'message': 'تم حفظ الرد بنجاح',
                 'inquiry_id': inquiry.get_inquiry_id(),
-                'email_sent': True
+                'email_sent': False
             })
         else:
             # إرجاع أول خطأ في النموذج
