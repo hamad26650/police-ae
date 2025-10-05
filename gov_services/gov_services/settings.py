@@ -312,9 +312,15 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp-mail.outlook.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+EMAIL_TIMEOUT = 10  # 10 seconds timeout to prevent hanging
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_HOST_USER', 'noreply@police.ae')
+
+# تعطيل البريد الإلكتروني مؤقتاً في حال عدم توفر الإعدادات
+if not EMAIL_HOST_USER or not EMAIL_HOST_PASSWORD:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # يطبع في Console بدلاً من الإرسال
 
 # ========== Railway/Production Configuration ==========
 if 'RAILWAY_ENVIRONMENT' in os.environ or 'WEBSITE_HOSTNAME' in os.environ:

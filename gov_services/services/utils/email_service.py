@@ -31,11 +31,14 @@ class EmailService:
         if not settings.EMAIL_HOST_USER or not settings.EMAIL_HOST_PASSWORD:
             logger.warning('إعدادات البريد الإلكتروني غير مكتملة - تم حفظ الرد بدون إرسال إيميل')
             return {
-                'success': False,
-                'message': 'إعدادات البريد الإلكتروني غير مكتملة. تم حفظ الرد ولكن لم يتم إرسال الإيميل.'
+                'success': True,  # نعتبرها ناجحة لأن الرد تم حفظه
+                'message': 'تم حفظ الرد بنجاح. لتفعيل إرسال الإيميلات، يرجى إضافة إعدادات البريد الإلكتروني في Railway Variables.'
             }
         
         try:
+            import socket
+            # تعيين timeout عام للـ socket لمنع التعليق
+            socket.setdefaulttimeout(10)
             # عنوان الرسالة
             subject = f'رد على استعلامكم - مركز شرطة البحيرة - رقم {inquiry.get_inquiry_id()}'
             
@@ -215,14 +218,30 @@ info@police.ae | +971-6-123-4567
             
             return {
                 'success': True,
-                'message': 'تم إرسال البريد الإلكتروني بنجاح'
+                'message': 'تم إرسال الرد والبريد الإلكتروني بنجاح'
             }
             
-        except Exception as e:
-            logger.error(f'فشل إرسال البريد الإلكتروني للاستعلام {inquiry.get_inquiry_id()}: {str(e)}')
+        except socket.timeout:
+            logger.error(f'انتهت مهلة الاتصال بخادم البريد الإلكتروني للاستعلام {inquiry.get_inquiry_id()}')
             return {
-                'success': False,
-                'message': f'فشل إرسال البريد الإلكتروني: {str(e)}'
+                'success': True,  # الرد محفوظ، فقط الإيميل فشل
+                'message': 'تم حفظ الرد بنجاح. فشل إرسال البريد الإلكتروني بسبب انتهاء المهلة. تحقق من إعدادات SMTP.'
+            }
+        except Exception as e:
+            error_msg = str(e)
+            logger.error(f'فشل إرسال البريد الإلكتروني للاستعلام {inquiry.get_inquiry_id()}: {error_msg}')
+            
+            # رسائل خطأ واضحة للمستخدم
+            if 'Authentication' in error_msg or '535' in error_msg:
+                user_message = 'تم حفظ الرد بنجاح. فشل إرسال البريد الإلكتروني: خطأ في المصادقة. تحقق من EMAIL_HOST_USER وEMAIL_HOST_PASSWORD في Railway Variables.'
+            elif 'timeout' in error_msg.lower():
+                user_message = 'تم حفظ الرد بنجاح. فشل إرسال البريد الإلكتروني: انتهت مهلة الاتصال.'
+            else:
+                user_message = f'تم حفظ الرد بنجاح. فشل إرسال البريد الإلكتروني: {error_msg[:100]}'
+            
+            return {
+                'success': True,  # الرد محفوظ، فقط الإيميل فشل
+                'message': user_message
             }
 
 
