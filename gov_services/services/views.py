@@ -413,33 +413,15 @@ def respond_to_inquiry(request, inquiry_id):
             
             logger.info(f'تم الرد على الاستعلام {inquiry.get_inquiry_id()} بواسطة {request.user.username} من IP: {get_client_ip(request)}')
             
-            # إرسال البريد الإلكتروني للمتعامل (فقط إذا كانت الإعدادات موجودة)
-            from django.conf import settings
-            email_sent = False
-            response_message = 'تم حفظ الرد بنجاح'
-            
-            if settings.EMAIL_HOST_USER and settings.EMAIL_HOST_PASSWORD:
-                try:
-                    email_result = email_service.send_inquiry_response(inquiry, response_text)
-                    
-                    if email_result['success']:
-                        logger.info(f'تم إرسال بريد إلكتروني للاستعلام {inquiry.get_inquiry_id()}')
-                        response_message = 'تم إرسال الرد بنجاح وتم إبلاغ المتعامل عبر البريد الإلكتروني'
-                        email_sent = True
-                    else:
-                        logger.warning(f'فشل إرسال البريد الإلكتروني للاستعلام {inquiry.get_inquiry_id()}: {email_result.get("message")}')
-                        response_message = 'تم حفظ الرد بنجاح'
-                except Exception as e:
-                    logger.error(f'خطأ في إرسال البريد الإلكتروني: {str(e)}')
-                    response_message = 'تم حفظ الرد بنجاح'
-            else:
-                logger.info('تم تخطي إرسال البريد الإلكتروني - الإعدادات غير متوفرة')
+            # ملاحظة: نظام البريد الإلكتروني معطل مؤقتاً
+            # لتفعيله، أضف المتغيرات التالية في Railway Variables:
+            # EMAIL_HOST_USER, EMAIL_HOST_PASSWORD, DEFAULT_FROM_EMAIL
             
             return JsonResponse({
                 'success': True, 
-                'message': response_message,
+                'message': 'تم حفظ الرد بنجاح',
                 'inquiry_id': inquiry.get_inquiry_id(),
-                'email_sent': email_sent
+                'email_sent': False
             })
         else:
             # إرجاع أول خطأ في النموذج
