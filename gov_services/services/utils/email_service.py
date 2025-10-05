@@ -27,6 +27,14 @@ class EmailService:
         Returns:
             dict: نتيجة الإرسال {'success': bool, 'message': str}
         """
+        # التحقق من إعدادات البريد الإلكتروني
+        if not settings.EMAIL_HOST_USER or not settings.EMAIL_HOST_PASSWORD:
+            logger.warning('إعدادات البريد الإلكتروني غير مكتملة - تم حفظ الرد بدون إرسال إيميل')
+            return {
+                'success': False,
+                'message': 'إعدادات البريد الإلكتروني غير مكتملة. تم حفظ الرد ولكن لم يتم إرسال الإيميل.'
+            }
+        
         try:
             # عنوان الرسالة
             subject = f'رد على استعلامكم - مركز شرطة البحيرة - رقم {inquiry.get_inquiry_id()}'
