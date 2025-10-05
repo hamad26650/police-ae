@@ -898,8 +898,8 @@
         <div class="search-section">
             <form method="get" action="" class="search-form">
                 <div class="search-group">
-                    <label class="search-label">البحث (رقم البلاغ / رقم الهاتف)</label>
-                    <input type="text" name="search" class="search-input" placeholder="ابحث برقم البلاغ أو رقم الهاتف..." value="{{ search_query|default:'' }}">
+                    <label class="search-label">البحث (رقم البلاغ / البريد الإلكتروني)</label>
+                    <input type="text" name="search" class="search-input" placeholder="ابحث برقم البلاغ أو البريد الإلكتروني..." value="{{ search_query|default:'' }}">
                 </div>
                 <button type="submit" class="search-btn">
                     بحث
@@ -923,7 +923,7 @@
                             <th>مركز الشرطة</th>
                             <th>رقم البلاغ</th>
                             <th>السنة</th>
-                            <th>رقم الهاتف</th>
+                            <th>البريد الإلكتروني</th>
                             <th>الحالة</th>
                             <th>الإجراءات</th>
                         </tr>
@@ -996,8 +996,8 @@
                     <div class="detail-value" id="modalReportYear">---</div>
                 </div>
                 <div class="detail-item">
-                    <div class="detail-label">رقم الهاتف</div>
-                    <div class="detail-value" id="modalPhone">---</div>
+                    <div class="detail-label">البريد الإلكتروني</div>
+                    <div class="detail-value" id="modalPhone" dir="ltr">---</div>
                 </div>
                 <div class="detail-item">
                     <div class="detail-label">تاريخ الاستعلام</div>
