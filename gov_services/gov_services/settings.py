@@ -408,24 +408,30 @@ if not EMAIL_HOST_USER or not EMAIL_HOST_PASSWORD:
 if IS_PRODUCTION:
     DEBUG = False
     
-    # Allowed hosts
+    # Allowed hosts - DigitalOcean App Platform
     allowed_host = (
         os.environ.get('RAILWAY_PUBLIC_DOMAIN') or 
         os.environ.get('WEBSITE_HOSTNAME') or
         os.environ.get('RENDER_EXTERNAL_HOSTNAME') or  # Render domain
-        os.environ.get('DIGITALOCEAN_APP_DOMAIN')  # DigitalOcean domain
+        os.environ.get('DIGITALOCEAN_APP_DOMAIN') or  # DigitalOcean custom domain
+        os.environ.get('APP_URL', '').replace('https://', '').replace('http://', '')  # DigitalOcean APP_URL
     )
+    
+    # Always allow all hosts in production for DigitalOcean
+    ALLOWED_HOSTS = ['*']
+    
+    # CSRF Trusted Origins - مهم جداً لـ Railway/Render/DigitalOcean!
     if allowed_host:
-        ALLOWED_HOSTS = [allowed_host, 'localhost', '127.0.0.1']
-        
-        # CSRF Trusted Origins - مهم جداً لـ Railway/Render/DigitalOcean!
         CSRF_TRUSTED_ORIGINS = [
             f'https://{allowed_host}',
             f'http://{allowed_host}',
         ]
     else:
-        # Default for production without specific domain (during build)
-        ALLOWED_HOSTS = ['*']
+        # For DigitalOcean - allow all subdomains
+        CSRF_TRUSTED_ORIGINS = [
+            'https://*.ondigitalocean.app',
+            'https://*.digitaloceanspaces.com',
+        ]
     
     # Database
     if 'DATABASE_URL' in os.environ:
@@ -435,18 +441,25 @@ if IS_PRODUCTION:
             conn_health_checks=True,
         )
     
-    # Security - Fix for Railway HTTPS
-    # Railway uses a proxy, tell Django to trust X-Forwarded-Proto header
+    # Security - Fix for HTTPS behind proxy
+    # DigitalOcean/Railway uses a proxy, tell Django to trust X-Forwarded-Proto header
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     
-    SECURE_SSL_REDIRECT = True
+    # SSL and Cookie Security
+    SECURE_SSL_REDIRECT = False  # DigitalOcean handles SSL redirect
     SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    SESSION_COOKIE_DOMAIN = None  # Let Django auto-detect
+    
     CSRF_COOKIE_SECURE = True
     CSRF_COOKIE_SAMESITE = 'Lax'
-    CSRF_COOKIE_HTTPONLY = False  # Important for Railway CSRF handling
-    SECURE_HSTS_SECONDS = 31536000
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
+    CSRF_COOKIE_HTTPONLY = False  # Important for AJAX CSRF handling
+    CSRF_COOKIE_DOMAIN = None  # Let Django auto-detect
+    
+    # HSTS (HTTP Strict Transport Security)
+    SECURE_HSTS_SECONDS = 0  # Disable HSTS for now to avoid issues
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+    SECURE_HSTS_PRELOAD = False
 
 # ========== PythonAnywhere Configuration ==========
 if 'PYTHONANYWHERE_DOMAIN' in os.environ:
