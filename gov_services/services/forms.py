@@ -163,3 +163,74 @@ class InquiryResponseForm(forms.Form):
             if len(response) < 10:
                 raise forms.ValidationError('الرد قصير جداً')
         return response
+
+
+class ServiceRequestForm(forms.Form):
+    """نموذج تقديم طلب خدمة"""
+    
+    requester_name = forms.CharField(
+        max_length=100,
+        required=True,
+        error_messages={
+            'required': 'يرجى إدخال الاسم الكامل',
+            'max_length': 'الاسم طويل جداً'
+        },
+        widget=forms.TextInput(attrs={
+            'class': 'form-input',
+            'placeholder': 'الاسم الكامل'
+        })
+    )
+    
+    requester_email = forms.EmailField(
+        max_length=254,
+        required=True,
+        error_messages={
+            'required': 'يرجى إدخال البريد الإلكتروني',
+            'invalid': 'البريد الإلكتروني غير صحيح'
+        },
+        widget=forms.EmailInput(attrs={
+            'class': 'form-input',
+            'placeholder': 'example@email.com'
+        })
+    )
+    
+    requester_phone = forms.CharField(
+        max_length=20,
+        required=True,
+        validators=[phone_validator],
+        error_messages={
+            'required': 'يرجى إدخال رقم الهاتف'
+        },
+        widget=forms.TextInput(attrs={
+            'class': 'form-input',
+            'placeholder': '05XXXXXXXX'
+        })
+    )
+    
+    requester_national_id = forms.CharField(
+        max_length=20,
+        required=True,
+        error_messages={
+            'required': 'يرجى إدخال رقم الهوية'
+        },
+        widget=forms.TextInput(attrs={
+            'class': 'form-input',
+            'placeholder': 'رقم الهوية الإماراتية'
+        })
+    )
+    
+    request_details = forms.CharField(
+        min_length=20,
+        max_length=500,
+        required=True,
+        error_messages={
+            'required': 'يرجى كتابة تفاصيل الطلب',
+            'min_length': 'تفاصيل الطلب قصيرة جداً (20 حرف على الأقل)',
+            'max_length': 'تفاصيل الطلب طويلة جداً (500 حرف كحد أقصى)'
+        },
+        widget=forms.Textarea(attrs={
+            'class': 'form-input',
+            'placeholder': 'اشرح طلبك بالتفصيل...',
+            'rows': 5
+        })
+    )

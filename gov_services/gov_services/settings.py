@@ -447,14 +447,16 @@ if IS_PRODUCTION:
     
     # SSL and Cookie Security
     SECURE_SSL_REDIRECT = False  # DigitalOcean handles SSL redirect
-    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = False  # Changed to False for debugging
     SESSION_COOKIE_SAMESITE = 'Lax'
     SESSION_COOKIE_DOMAIN = None  # Let Django auto-detect
+    SESSION_COOKIE_NAME = 'gov_sessionid'  # Custom session cookie name
     
-    CSRF_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = False  # Changed to False for debugging
     CSRF_COOKIE_SAMESITE = 'Lax'
     CSRF_COOKIE_HTTPONLY = False  # Important for AJAX CSRF handling
     CSRF_COOKIE_DOMAIN = None  # Let Django auto-detect
+    CSRF_COOKIE_NAME = 'gov_csrftoken'  # Custom CSRF cookie name
     
     # HSTS (HTTP Strict Transport Security)
     SECURE_HSTS_SECONDS = 0  # Disable HSTS for now to avoid issues

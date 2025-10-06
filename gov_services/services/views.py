@@ -7,7 +7,7 @@ from django.db.models import Q
 from django.utils import timezone
 from django.http import JsonResponse
 from .models import Service, SiteSettings, ServiceRequest, EmployeeProfile, Center, SMSMessage, Inquiry
-from .forms import InquiryForm, StaffLoginForm, InquiryResponseForm
+from .forms import InquiryForm, StaffLoginForm, InquiryResponseForm, ServiceRequestForm
 from .decorators import rate_limit, track_failed_login, log_user_activity, get_client_ip
 from .utils.email_service import email_service
 import logging
@@ -60,9 +60,70 @@ def model1(request):
     """صفحة نموذج 1"""
     return render(request, 'services/model1.html')
 
+@rate_limit(key_prefix='submit_report', limit=5, period=3600)  # 5 طلبات في الساعة
 def submit_report(request):
-    """صفحة تقديم البلاغ الإلكتروني"""
-    return render(request, 'services/submit_report.html')
+    """صفحة تقديم البلاغ/الطلب الإلكتروني"""
+    form = ServiceRequestForm()
+    
+    if request.method == 'POST':
+        form = ServiceRequestForm(request.POST)
+        
+        if form.is_valid():
+            try:
+                # اختيار مركز افتراضي
+                default_center = Center.objects.first()
+                
+                if not default_center:
+                    messages.error(request, 'عذراً، لا توجد مراكز متاحة حالياً. يرجى المحاولة لاحقاً.')
+                    return redirect('services:submit_report')
+                
+                # إنشاء طلب خدمة جديد
+                service_request = ServiceRequest.objects.create(
+                    service=Service.objects.first() or Service.objects.create(
+                        name='sharjah_police',
+                        slug='sharjah-police',
+                        description='خدمات شرطة الشارقة',
+                        is_active=True
+                    ),
+                    center=default_center,
+                    requester_name=form.cleaned_data['requester_name'],
+                    requester_email=form.cleaned_data['requester_email'],
+                    requester_phone=form.cleaned_data['requester_phone'],
+                    requester_national_id=form.cleaned_data['requester_national_id'],
+                    request_details=form.cleaned_data['request_details'],
+                    status='pending',
+                    priority='medium'
+                )
+                
+                # تسجيل في الـ logs
+                logger.info(f'طلب جديد: {service_request.get_request_id()} من {service_request.requester_name}')
+                
+                # رسالة نجاح
+                messages.success(
+                    request, 
+                    f'تم تقديم طلبك بنجاح! رقم الطلب: {service_request.get_request_id()}. '
+                    f'سيتم التواصل معك عبر البريد الإلكتروني: {service_request.requester_email}'
+                )
+                
+                # إرسال إيميل (إذا كان مفعّل)
+                try:
+                    email_service.send_request_confirmation(service_request)
+                except Exception as e:
+                    logger.warning(f'فشل إرسال الإيميل: {str(e)}')
+                
+                return redirect('services:submit_report')
+                
+            except Exception as e:
+                logger.error(f'خطأ في إنشاء الطلب: {str(e)}')
+                messages.error(request, 'عذراً، حدث خطأ أثناء تقديم الطلب. يرجى المحاولة لاحقاً.')
+        else:
+            # عرض أخطاء النموذج
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, error)
+    
+    context = {'form': form}
+    return render(request, 'services/submit_report.html', context)
 
 @rate_limit(key_prefix='inquiry', limit=3, period=600)  # 3 محاولات كل 10 دقائق
 def check_report_status(request):
