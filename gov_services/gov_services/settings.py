@@ -171,6 +171,8 @@ SESSION_COOKIE_AGE = 3600  # ساعة واحدة
 SESSION_COOKIE_HTTPONLY = True
 SESSION_SAVE_EVERY_REQUEST = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # Use database sessions
+SESSION_CACHE_ALIAS = 'default'
 
 # CSRF Protection
 CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript access if needed

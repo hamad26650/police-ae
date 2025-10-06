@@ -203,8 +203,17 @@ def staff_login(request):
                     request.session.save()  # حفظ الـ session بشكل صريح
                     logger.info(f'تسجيل دخول ناجح: {username} من IP: {get_client_ip(request)}')
                     
-                    # إعادة التوجيه مباشرة بدون رسالة (لتجنب مشاكل الـ messages)
-                    return redirect('services:staff_dashboard')
+                    # إعادة التوجيه مع URL مطلق
+                    from django.urls import reverse
+                    dashboard_url = reverse('services:staff_dashboard')
+                    logger.info(f'إعادة توجيه إلى: {dashboard_url}')
+                    
+                    # إنشاء response مع redirect
+                    response = redirect(dashboard_url)
+                    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+                    response['Pragma'] = 'no-cache'
+                    response['Expires'] = '0'
+                    return response
                 else:
                     # التحقق من وجود ملف شخصي للموظفين العاديين
                     try:
@@ -212,7 +221,18 @@ def staff_login(request):
                         login(request, user)
                         request.session.save()  # حفظ الـ session بشكل صريح
                         logger.info(f'تسجيل دخول موظف: {username} من IP: {get_client_ip(request)}')
-                        return redirect('services:staff_dashboard')
+                        
+                        # إعادة التوجيه مع URL مطلق
+                        from django.urls import reverse
+                        dashboard_url = reverse('services:staff_dashboard')
+                        logger.info(f'إعادة توجيه موظف إلى: {dashboard_url}')
+                        
+                        # إنشاء response مع redirect
+                        response = redirect(dashboard_url)
+                        response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+                        response['Pragma'] = 'no-cache'
+                        response['Expires'] = '0'
+                        return response
                     except EmployeeProfile.DoesNotExist:
                         logger.warning(f'محاولة دخول غير مصرح بها: {username} من IP: {get_client_ip(request)}')
                         messages.error(request, 'هذا الحساب غير مخول للدخول إلى نظام الموظفين')

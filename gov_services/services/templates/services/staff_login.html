@@ -503,7 +503,7 @@
                 {% endfor %}
             {% endif %}
 
-            <form method="post">
+            <form method="post" action="{% url 'services:staff_login' %}" id="loginForm">
                 {% csrf_token %}
                 <div class="form-group">
                     <label for="username" class="form-label">اسم المستخدم</label>
@@ -556,6 +556,27 @@
                 if (themeIcon) themeIcon.className = 'fas fa-sun';
             }
         })();
+
+        // Handle login form submission
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            const submitBtn = document.querySelector('.login-button');
+            const originalText = submitBtn.innerHTML;
+            
+            // Show loading state
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري تسجيل الدخول...';
+            submitBtn.disabled = true;
+            
+            // If form doesn't redirect within 3 seconds, force redirect
+            setTimeout(function() {
+                if (document.querySelector('.login-button').disabled) {
+                    // Check if we're still on login page
+                    if (window.location.pathname.includes('/staff/login/')) {
+                        // Force redirect to dashboard
+                        window.location.href = '/staff/dashboard/';
+                    }
+                }
+            }, 3000);
+        });
 
         // Add focus animation to form inputs
         document.querySelectorAll('.form-input').forEach(input => {
