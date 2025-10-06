@@ -29,15 +29,15 @@ services:
     # Environment Variables (you'll add these in DigitalOcean dashboard)
     envs:
       - key: DJANGO_SECRET_KEY
-        scope: RUN_TIME
+        scope: RUN_AND_BUILD_TIME
         type: SECRET
       
       - key: DJANGO_DEBUG
         value: "False"
-        scope: RUN_TIME
+        scope: RUN_AND_BUILD_TIME
       
       - key: DATABASE_URL
-        scope: RUN_TIME
+        scope: RUN_AND_BUILD_TIME
         type: SECRET
       
       - key: EMAIL_HOST_USER

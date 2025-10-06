@@ -200,9 +200,9 @@ IS_PRODUCTION = (
     'RAILWAY_ENVIRONMENT' in os.environ or 
     'WEBSITE_HOSTNAME' in os.environ or 
     'RENDER' in os.environ or
-    'DATABASE_URL' in os.environ or  # Render/DigitalOcean uses PostgreSQL DATABASE_URL
     'PYTHONANYWHERE_DOMAIN' in os.environ or  # PythonAnywhere
-    'DIGITALOCEAN_APP_ID' in os.environ  # DigitalOcean App Platform
+    'DIGITALOCEAN_APP_ID' in os.environ or  # DigitalOcean App Platform
+    os.environ.get('DJANGO_DEBUG', 'True') == 'False'  # Explicit production flag
 )
 
 # Configure logging handlers based on environment
@@ -258,75 +258,130 @@ if IS_PRODUCTION:
     }
 else:
     # Development: Use both console and file logging
-    LOGGING = {
-        'version': 1,
-        'disable_existing_loggers': False,
-        'formatters': {
-            'verbose': {
-                'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
-                'style': '{',
+    import os
+    log_dir = BASE_DIR / 'logs'
+    
+    # إنشاء مجلد logs إذا لم يكن موجوداً (للتطوير المحلي فقط)
+    try:
+        if not log_dir.exists():
+            log_dir.mkdir(parents=True, exist_ok=True)
+        
+        # التحقق من إمكانية الكتابة
+        test_file = log_dir / '.test'
+        test_file.touch()
+        test_file.unlink()
+        can_write_logs = True
+    except (OSError, PermissionError):
+        can_write_logs = False
+    
+    if can_write_logs:
+        # Development with file logging
+        LOGGING = {
+            'version': 1,
+            'disable_existing_loggers': False,
+            'formatters': {
+                'verbose': {
+                    'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+                    'style': '{',
+                },
+                'simple': {
+                    'format': '{levelname} {message}',
+                    'style': '{',
+                },
             },
-            'simple': {
-                'format': '{levelname} {message}',
-                'style': '{',
+            'handlers': {
+                'console': {
+                    'level': 'INFO',
+                    'class': 'logging.StreamHandler',
+                    'formatter': 'simple'
+                },
+                'file': {
+                    'level': 'WARNING',
+                    'class': 'logging.FileHandler',
+                    'filename': BASE_DIR / 'logs' / 'django.log',
+                    'formatter': 'verbose',
+                },
+                'security_file': {
+                    'level': 'WARNING',
+                    'class': 'logging.FileHandler',
+                    'filename': BASE_DIR / 'logs' / 'security.log',
+                    'formatter': 'verbose',
+                },
             },
-        },
-        'filters': {
-            'require_debug_false': {
-                '()': 'django.utils.log.RequireDebugFalse',
+            'loggers': {
+                'django': {
+                    'handlers': ['console', 'file'],
+                    'level': 'INFO',
+                    'propagate': False,
+                },
+                'django.security': {
+                    'handlers': ['security_file'],
+                    'level': 'WARNING',
+                    'propagate': False,
+                },
+                'services': {
+                    'handlers': ['console', 'file'],
+                    'level': 'INFO',
+                    'propagate': False,
+                },
+                'security': {
+                    'handlers': ['console', 'security_file'],
+                    'level': 'INFO',
+                    'propagate': False,
+                },
+                'requests': {
+                    'handlers': ['console', 'file'],
+                    'level': 'INFO',
+                    'propagate': False,
+                },
             },
-            'require_debug_true': {
-                '()': 'django.utils.log.RequireDebugTrue',
+        }
+    else:
+        # Fallback to console only if can't write files
+        LOGGING = {
+            'version': 1,
+            'disable_existing_loggers': False,
+            'formatters': {
+                'simple': {
+                    'format': '{levelname} {message}',
+                    'style': '{',
+                },
             },
-        },
-        'handlers': {
-            'console': {
-                'level': 'INFO',
-                'filters': ['require_debug_true'],
-                'class': 'logging.StreamHandler',
-                'formatter': 'simple'
+            'handlers': {
+                'console': {
+                    'level': 'INFO',
+                    'class': 'logging.StreamHandler',
+                    'formatter': 'simple'
+                },
             },
-            'file': {
-                'level': 'WARNING',
-                'class': 'logging.FileHandler',
-                'filename': BASE_DIR / 'logs' / 'django.log',
-                'formatter': 'verbose',
+            'loggers': {
+                'django': {
+                    'handlers': ['console'],
+                    'level': 'INFO',
+                    'propagate': False,
+                },
+                'django.security': {
+                    'handlers': ['console'],
+                    'level': 'WARNING',
+                    'propagate': False,
+                },
+                'services': {
+                    'handlers': ['console'],
+                    'level': 'INFO',
+                    'propagate': False,
+                },
+                'security': {
+                    'handlers': ['console'],
+                    'level': 'INFO',
+                    'propagate': False,
+                },
+                'requests': {
+                    'handlers': ['console'],
+                    'level': 'INFO',
+                    'propagate': False,
+                },
             },
-            'security_file': {
-                'level': 'WARNING',
-                'class': 'logging.FileHandler',
-                'filename': BASE_DIR / 'logs' / 'security.log',
-                'formatter': 'verbose',
-            },
-        },
-        'loggers': {
-            'django': {
-                'handlers': ['console', 'file'],
-                'level': 'INFO',
-                'propagate': False,
-            },
-            'django.security': {
-                'handlers': ['security_file'],
-                'level': 'WARNING',
-                'propagate': False,
-            },
-            'services': {
-                'handlers': ['console', 'file'],
-                'level': 'INFO',
-                'propagate': False,
-            },
-            'security': { # Custom logger for security events
-                'handlers': ['console', 'security_file'],
-                'level': 'INFO',
-                'propagate': False,
-            },
-            'requests': { # Custom logger for all requests
-                'handlers': ['console', 'file'],
-                'level': 'INFO',
-                'propagate': False,
-            },
-        },
-    }
+        }
 
 # ========== Email Configuration ==========
 # إعدادات البريد الإلكتروني (Gmail)
@@ -346,8 +401,6 @@ if not EMAIL_HOST_USER or not EMAIL_HOST_PASSWORD:
 
 # ========== Railway/Render/Production Configuration ==========
 if IS_PRODUCTION:
-    import dj_database_url
-    
     DEBUG = False
     
     # Allowed hosts
@@ -360,14 +413,18 @@ if IS_PRODUCTION:
     if allowed_host:
         ALLOWED_HOSTS = [allowed_host, 'localhost', '127.0.0.1']
         
-        # CSRF Trusted Origins - مهم جداً لـ Railway/Render!
+        # CSRF Trusted Origins - مهم جداً لـ Railway/Render/DigitalOcean!
         CSRF_TRUSTED_ORIGINS = [
             f'https://{allowed_host}',
             f'http://{allowed_host}',
         ]
+    else:
+        # Default for production without specific domain (during build)
+        ALLOWED_HOSTS = ['*']
     
     # Database
     if 'DATABASE_URL' in os.environ:
+        import dj_database_url
         DATABASES['default'] = dj_database_url.config(
             conn_max_age=600,
             conn_health_checks=True,
