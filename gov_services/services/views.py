@@ -184,6 +184,7 @@ def staff_login(request):
             password = form.cleaned_data['password']
             
             user = authenticate(request, username=username, password=password)
+            
             if user is not None:
                 # التحقق من أن المستخدم موظف أو مدير
                 if user.is_superuser or user.is_staff:
@@ -197,27 +198,41 @@ def staff_login(request):
                                 'center': Center.objects.first() if Center.objects.exists() else None
                             }
                         )
+                    # تسجيل الدخول
                     login(request, user)
+                    request.session.save()  # حفظ الـ session بشكل صريح
                     logger.info(f'تسجيل دخول ناجح: {username} من IP: {get_client_ip(request)}')
-                    messages.success(request, f'مرحباً {user.get_full_name() or user.username}')
+                    
+                    # إعادة التوجيه مباشرة بدون رسالة (لتجنب مشاكل الـ messages)
                     return redirect('services:staff_dashboard')
                 else:
                     # التحقق من وجود ملف شخصي للموظفين العاديين
                     try:
                         employee_profile = EmployeeProfile.objects.get(user=user)
                         login(request, user)
+                        request.session.save()  # حفظ الـ session بشكل صريح
                         logger.info(f'تسجيل دخول موظف: {username} من IP: {get_client_ip(request)}')
-                        messages.success(request, f'مرحباً {user.get_full_name() or user.username}')
                         return redirect('services:staff_dashboard')
                     except EmployeeProfile.DoesNotExist:
                         logger.warning(f'محاولة دخول غير مصرح بها: {username} من IP: {get_client_ip(request)}')
                         messages.error(request, 'هذا الحساب غير مخول للدخول إلى نظام الموظفين')
+            else:
+                # اسم المستخدم أو كلمة المرور خاطئة
+                logger.warning(f'محاولة دخول فاشلة: {username} من IP: {get_client_ip(request)}')
+                messages.error(request, 'اسم المستخدم أو كلمة المرور غير صحيحة')
+        else:
+            # عرض أخطاء النموذج
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, error)
     
     context = {'form': form}
     return render(request, 'services/staff_login.html', context)
 
 def staff_logout(request):
     """تسجيل خروج الموظفين"""
+    if 'welcomed' in request.session:
+        del request.session['welcomed']
     logout(request)
     messages.success(request, 'تم تسجيل الخروج بنجاح')
     return redirect('services:staff_login')
@@ -229,6 +244,11 @@ def staff_dashboard(request):
     if not (request.user.is_superuser or request.user.is_staff):
         messages.error(request, 'غير مخول للوصول')
         return redirect('services:staff_login')
+    
+    # رسالة ترحيب في أول زيارة
+    if not request.session.get('welcomed', False):
+        messages.success(request, f'مرحباً {request.user.get_full_name() or request.user.username}!')
+        request.session['welcomed'] = True
     
     # محاولة الحصول على ملف الموظف أو إنشاؤه للمدراء
     try:
