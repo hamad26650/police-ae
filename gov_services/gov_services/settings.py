@@ -195,13 +195,14 @@ PASSWORD_HASHERS = [
 ]
 
 # Logging للأحداث الأمنية
-# Check if we're in production (Railway/Render/PythonAnywhere/Cloud)
+# Check if we're in production (Railway/Render/PythonAnywhere/DigitalOcean/Cloud)
 IS_PRODUCTION = (
     'RAILWAY_ENVIRONMENT' in os.environ or 
     'WEBSITE_HOSTNAME' in os.environ or 
     'RENDER' in os.environ or
-    'DATABASE_URL' in os.environ or  # Render uses PostgreSQL DATABASE_URL
-    'PYTHONANYWHERE_DOMAIN' in os.environ  # PythonAnywhere
+    'DATABASE_URL' in os.environ or  # Render/DigitalOcean uses PostgreSQL DATABASE_URL
+    'PYTHONANYWHERE_DOMAIN' in os.environ or  # PythonAnywhere
+    'DIGITALOCEAN_APP_ID' in os.environ  # DigitalOcean App Platform
 )
 
 # Configure logging handlers based on environment
@@ -353,7 +354,8 @@ if IS_PRODUCTION:
     allowed_host = (
         os.environ.get('RAILWAY_PUBLIC_DOMAIN') or 
         os.environ.get('WEBSITE_HOSTNAME') or
-        os.environ.get('RENDER_EXTERNAL_HOSTNAME')  # Render domain
+        os.environ.get('RENDER_EXTERNAL_HOSTNAME') or  # Render domain
+        os.environ.get('DIGITALOCEAN_APP_DOMAIN')  # DigitalOcean domain
     )
     if allowed_host:
         ALLOWED_HOSTS = [allowed_host, 'localhost', '127.0.0.1']
