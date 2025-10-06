@@ -566,14 +566,25 @@
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري تسجيل الدخول...';
             submitBtn.disabled = true;
             
-            // If form doesn't redirect within 3 seconds, force redirect
+            // Multiple redirect attempts
             setTimeout(function() {
-                if (document.querySelector('.login-button').disabled) {
-                    // Check if we're still on login page
-                    if (window.location.pathname.includes('/staff/login/')) {
-                        // Force redirect to dashboard
-                        window.location.href = '/staff/dashboard/';
-                    }
+                if (window.location.pathname.includes('/staff/login/')) {
+                    console.log('Attempting redirect 1...');
+                    window.location.href = '/staff/dashboard/';
+                }
+            }, 1000);
+            
+            setTimeout(function() {
+                if (window.location.pathname.includes('/staff/login/')) {
+                    console.log('Attempting redirect 2...');
+                    window.location.replace('/staff/dashboard/');
+                }
+            }, 2000);
+            
+            setTimeout(function() {
+                if (window.location.pathname.includes('/staff/login/')) {
+                    console.log('Attempting redirect 3...');
+                    window.location.assign('/staff/dashboard/');
                 }
             }, 3000);
         });

@@ -203,16 +203,22 @@ def staff_login(request):
                     request.session.save()  # حفظ الـ session بشكل صريح
                     logger.info(f'تسجيل دخول ناجح: {username} من IP: {get_client_ip(request)}')
                     
-                    # إعادة التوجيه مع URL مطلق
-                    from django.urls import reverse
-                    dashboard_url = reverse('services:staff_dashboard')
-                    logger.info(f'إعادة توجيه إلى: {dashboard_url}')
-                    
-                    # إنشاء response مع redirect
-                    response = redirect(dashboard_url)
+                    # حل جذري: إعادة توجيه مباشر بدون Django redirect
+                    from django.http import HttpResponse
+                    response = HttpResponse('''
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <meta http-equiv="refresh" content="0;url=/staff/dashboard/">
+                        <script>window.location.href = '/staff/dashboard/';</script>
+                    </head>
+                    <body>
+                        <p>جاري التوجيه...</p>
+                        <script>setTimeout(function(){ window.location.href = '/staff/dashboard/'; }, 100);</script>
+                    </body>
+                    </html>
+                    ''')
                     response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-                    response['Pragma'] = 'no-cache'
-                    response['Expires'] = '0'
                     return response
                 else:
                     # التحقق من وجود ملف شخصي للموظفين العاديين
@@ -222,16 +228,22 @@ def staff_login(request):
                         request.session.save()  # حفظ الـ session بشكل صريح
                         logger.info(f'تسجيل دخول موظف: {username} من IP: {get_client_ip(request)}')
                         
-                        # إعادة التوجيه مع URL مطلق
-                        from django.urls import reverse
-                        dashboard_url = reverse('services:staff_dashboard')
-                        logger.info(f'إعادة توجيه موظف إلى: {dashboard_url}')
-                        
-                        # إنشاء response مع redirect
-                        response = redirect(dashboard_url)
+                        # حل جذري: إعادة توجيه مباشر بدون Django redirect
+                        from django.http import HttpResponse
+                        response = HttpResponse('''
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <meta http-equiv="refresh" content="0;url=/staff/dashboard/">
+                            <script>window.location.href = '/staff/dashboard/';</script>
+                        </head>
+                        <body>
+                            <p>جاري التوجيه...</p>
+                            <script>setTimeout(function(){ window.location.href = '/staff/dashboard/'; }, 100);</script>
+                        </body>
+                        </html>
+                        ''')
                         response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-                        response['Pragma'] = 'no-cache'
-                        response['Expires'] = '0'
                         return response
                     except EmployeeProfile.DoesNotExist:
                         logger.warning(f'محاولة دخول غير مصرح بها: {username} من IP: {get_client_ip(request)}')
