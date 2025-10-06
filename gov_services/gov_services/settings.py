@@ -45,6 +45,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # For static files serving
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -138,10 +139,14 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 STATICFILES_DIRS = [
     BASE_DIR / "services" / "static",
 ]
+
+# WhiteNoise configuration
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -429,17 +434,6 @@ if IS_PRODUCTION:
             conn_max_age=600,
             conn_health_checks=True,
         )
-    
-    # WhiteNoise for static files
-    if 'whitenoise.middleware.WhiteNoiseMiddleware' not in MIDDLEWARE:
-        MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
-    
-    # Use CompressedStaticFilesStorage instead of Manifest version to avoid issues
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
-    STATIC_ROOT = BASE_DIR / 'staticfiles'
-    
-    # Allow WhiteNoise to serve all static files
-    WHITENOISE_AUTOREFRESH = True  # Only for development/testing
     
     # Security - Fix for Railway HTTPS
     # Railway uses a proxy, tell Django to trust X-Forwarded-Proto header
