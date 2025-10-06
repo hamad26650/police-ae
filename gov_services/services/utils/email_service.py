@@ -243,6 +243,271 @@ info@police.ae | +971-6-123-4567
                 'success': True,  # الرد محفوظ، فقط الإيميل فشل
                 'message': user_message
             }
+    
+    @staticmethod
+    def send_inquiry_confirmation(inquiry):
+        """إرسال إيميل تأكيد للمواطن عند تقديم استعلام"""
+        if not settings.EMAIL_HOST_USER or not settings.EMAIL_HOST_PASSWORD:
+            logger.warning('إعدادات البريد الإلكتروني غير مكتملة')
+            return {'success': False, 'message': 'إعدادات البريد الإلكتروني غير مكتملة'}
+        
+        try:
+            import socket
+            socket.setdefaulttimeout(10)
+            
+            subject = f'تأكيد استلام استعلامكم - رقم {inquiry.get_inquiry_id()}'
+            
+            html_message = f"""
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>تأكيد استلام الاستعلام</title>
+    <style>
+        body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; direction: rtl; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background: #4a90e2; color: white; padding: 20px; text-align: center; }}
+        .content {{ background: #f8f9fa; padding: 20px; }}
+        .footer {{ background: #343a40; color: white; padding: 15px; text-align: center; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>شرطة الشارقة</h2>
+            <p>تأكيد استلام الاستعلام</p>
+        </div>
+        <div class="content">
+            <h3>عزيزي المواطن،</h3>
+            <p>نؤكد لكم استلام استعلامكم بخصوص البلاغ رقم <strong>{inquiry.report_number}/{inquiry.report_year}</strong></p>
+            <p><strong>رقم الاستعلام:</strong> {inquiry.get_inquiry_id()}</p>
+            <p><strong>مركز الشرطة:</strong> {inquiry.police_center}</p>
+            <p><strong>تاريخ الاستعلام:</strong> {inquiry.created_at.strftime('%Y-%m-%d %H:%M')}</p>
+            <p>سيتم التواصل معكم قريباً عبر البريد الإلكتروني المرفق.</p>
+            <p>شكراً لثقتكم بنا.</p>
+        </div>
+        <div class="footer">
+            <p>شرطة الشارقة - خدمة المواطنين</p>
+        </div>
+    </div>
+</body>
+</html>
+            """
+            
+            plain_message = f"""
+تأكيد استلام الاستعلام
+رقم الاستعلام: {inquiry.get_inquiry_id()}
+مركز الشرطة: {inquiry.police_center}
+رقم البلاغ: {inquiry.report_number}/{inquiry.report_year}
+تاريخ الاستعلام: {inquiry.created_at.strftime('%Y-%m-%d %H:%M')}
+
+سيتم التواصل معكم قريباً.
+شكراً لثقتكم بنا.
+شرطة الشارقة
+            """
+            
+            send_mail(
+                subject=subject,
+                message=plain_message,
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[inquiry.phone],  # email stored in phone field
+                html_message=html_message,
+                fail_silently=False
+            )
+            
+            logger.info(f'تم إرسال إيميل تأكيد للاستعلام {inquiry.get_inquiry_id()}')
+            return {'success': True, 'message': 'تم إرسال الإيميل بنجاح'}
+            
+        except Exception as e:
+            logger.error(f'فشل إرسال إيميل تأكيد: {str(e)}')
+            return {'success': False, 'message': f'فشل إرسال الإيميل: {str(e)}'}
+    
+    @staticmethod
+    def notify_staff_new_inquiry(inquiry):
+        """إرسال إشعار للموظفين عن استعلام جديد"""
+        if not settings.EMAIL_HOST_USER or not settings.EMAIL_HOST_PASSWORD:
+            logger.warning('إعدادات البريد الإلكتروني غير مكتملة')
+            return {'success': False, 'message': 'إعدادات البريد الإلكتروني غير مكتملة'}
+        
+        try:
+            from django.contrib.auth.models import User
+            import socket
+            socket.setdefaulttimeout(10)
+            
+            # الحصول على جميع الموظفين
+            staff_users = User.objects.filter(is_staff=True, is_active=True)
+            
+            if not staff_users.exists():
+                logger.warning('لا يوجد موظفين مفعلين لإرسال الإشعار')
+                return {'success': False, 'message': 'لا يوجد موظفين مفعلين'}
+            
+            subject = f'استعلام جديد - رقم {inquiry.get_inquiry_id()}'
+            
+            html_message = f"""
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>استعلام جديد</title>
+    <style>
+        body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; direction: rtl; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background: #dc3545; color: white; padding: 20px; text-align: center; }}
+        .content {{ background: #f8f9fa; padding: 20px; }}
+        .footer {{ background: #343a40; color: white; padding: 15px; text-align: center; }}
+        .urgent {{ background: #fff3cd; border: 1px solid #ffeaa7; padding: 10px; margin: 10px 0; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>🔔 استعلام جديد</h2>
+            <p>نظام إدارة الاستعلامات</p>
+        </div>
+        <div class="content">
+            <div class="urgent">
+                <h3>⚠️ يرجى الرد على هذا الاستعلام</h3>
+            </div>
+            <p><strong>رقم الاستعلام:</strong> {inquiry.get_inquiry_id()}</p>
+            <p><strong>نوع الاستعلام:</strong> {inquiry.get_inquiry_type_display()}</p>
+            <p><strong>مركز الشرطة:</strong> {inquiry.police_center}</p>
+            <p><strong>رقم البلاغ:</strong> {inquiry.report_number}/{inquiry.report_year}</p>
+            <p><strong>البريد الإلكتروني:</strong> {inquiry.phone}</p>
+            <p><strong>تاريخ الاستعلام:</strong> {inquiry.created_at.strftime('%Y-%m-%d %H:%M')}</p>
+            <p><strong>رسالة الاستعلام:</strong> {inquiry.message}</p>
+            <hr>
+            <p><a href="https://octopus-app-glkh4.ondigitalocean.app/staff/dashboard/" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">الرد على الاستعلام</a></p>
+        </div>
+        <div class="footer">
+            <p>نظام إدارة الاستعلامات - شرطة الشارقة</p>
+        </div>
+    </div>
+</body>
+</html>
+            """
+            
+            plain_message = f"""
+استعلام جديد - رقم {inquiry.get_inquiry_id()}
+
+نوع الاستعلام: {inquiry.get_inquiry_type_display()}
+مركز الشرطة: {inquiry.police_center}
+رقم البلاغ: {inquiry.report_number}/{inquiry.report_year}
+البريد الإلكتروني: {inquiry.phone}
+تاريخ الاستعلام: {inquiry.created_at.strftime('%Y-%m-%d %H:%M')}
+رسالة الاستعلام: {inquiry.message}
+
+يرجى الرد على هذا الاستعلام من خلال لوحة التحكم.
+            """
+            
+            # إرسال الإيميل لجميع الموظفين
+            staff_emails = [user.email for user in staff_users if user.email]
+            
+            if staff_emails:
+                send_mail(
+                    subject=subject,
+                    message=plain_message,
+                    from_email=settings.EMAIL_HOST_USER,
+                    recipient_list=staff_emails,
+                    html_message=html_message,
+                    fail_silently=False
+                )
+                
+                logger.info(f'تم إرسال إشعار للموظفين عن الاستعلام {inquiry.get_inquiry_id()} إلى {len(staff_emails)} موظف')
+                return {'success': True, 'message': f'تم إرسال الإشعار إلى {len(staff_emails)} موظف'}
+            else:
+                logger.warning('لا توجد عناوين بريد إلكتروني للموظفين')
+                return {'success': False, 'message': 'لا توجد عناوين بريد إلكتروني للموظفين'}
+            
+        except Exception as e:
+            logger.error(f'فشل إرسال إشعار للموظفين: {str(e)}')
+            return {'success': False, 'message': f'فشل إرسال الإشعار: {str(e)}'}
+    
+    @staticmethod
+    def send_request_confirmation(service_request):
+        """إرسال إيميل تأكيد لطلب خدمة"""
+        if not settings.EMAIL_HOST_USER or not settings.EMAIL_HOST_PASSWORD:
+            logger.warning('إعدادات البريد الإلكتروني غير مكتملة')
+            return {'success': False, 'message': 'إعدادات البريد الإلكتروني غير مكتملة'}
+        
+        try:
+            import socket
+            socket.setdefaulttimeout(10)
+            
+            subject = f'تأكيد استلام طلبكم - رقم {service_request.get_request_id()}'
+            
+            html_message = f"""
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>تأكيد استلام الطلب</title>
+    <style>
+        body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; direction: rtl; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background: #28a745; color: white; padding: 20px; text-align: center; }}
+        .content {{ background: #f8f9fa; padding: 20px; }}
+        .footer {{ background: #343a40; color: white; padding: 15px; text-align: center; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>شرطة الشارقة</h2>
+            <p>تأكيد استلام الطلب</p>
+        </div>
+        <div class="content">
+            <h3>عزيزي المواطن،</h3>
+            <p>نؤكد لكم استلام طلبكم بنجاح</p>
+            <p><strong>رقم الطلب:</strong> {service_request.get_request_id()}</p>
+            <p><strong>الخدمة:</strong> {service_request.service}</p>
+            <p><strong>المركز:</strong> {service_request.center}</p>
+            <p><strong>الاسم:</strong> {service_request.requester_name}</p>
+            <p><strong>البريد الإلكتروني:</strong> {service_request.requester_email}</p>
+            <p><strong>رقم الهاتف:</strong> {service_request.requester_phone}</p>
+            <p><strong>تفاصيل الطلب:</strong> {service_request.request_details}</p>
+            <p><strong>تاريخ الطلب:</strong> {service_request.created_at.strftime('%Y-%m-%d %H:%M')}</p>
+            <p>سيتم التواصل معكم قريباً لتحديث حالة الطلب.</p>
+            <p>شكراً لثقتكم بنا.</p>
+        </div>
+        <div class="footer">
+            <p>شرطة الشارقة - خدمة المواطنين</p>
+        </div>
+    </div>
+</body>
+</html>
+            """
+            
+            plain_message = f"""
+تأكيد استلام الطلب
+رقم الطلب: {service_request.get_request_id()}
+الخدمة: {service_request.service}
+المركز: {service_request.center}
+الاسم: {service_request.requester_name}
+البريد الإلكتروني: {service_request.requester_email}
+رقم الهاتف: {service_request.requester_phone}
+تفاصيل الطلب: {service_request.request_details}
+تاريخ الطلب: {service_request.created_at.strftime('%Y-%m-%d %H:%M')}
+
+سيتم التواصل معكم قريباً.
+شكراً لثقتكم بنا.
+شرطة الشارقة
+            """
+            
+            send_mail(
+                subject=subject,
+                message=plain_message,
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[service_request.requester_email],
+                html_message=html_message,
+                fail_silently=False
+            )
+            
+            logger.info(f'تم إرسال إيميل تأكيد للطلب {service_request.get_request_id()}')
+            return {'success': True, 'message': 'تم إرسال الإيميل بنجاح'}
+            
+        except Exception as e:
+            logger.error(f'فشل إرسال إيميل تأكيد للطلب: {str(e)}')
+            return {'success': False, 'message': f'فشل إرسال الإيميل: {str(e)}'}
 
 
 # إنشاء instance من الخدمة

@@ -154,6 +154,21 @@ def check_report_status(request):
             )
             
             logger.info(f'استعلام جديد: {inquiry.get_inquiry_id()} - الإيميل: {email} - IP: {ip}')
+            
+            # إرسال إيميل تأكيد للمواطن
+            try:
+                email_service.send_inquiry_confirmation(inquiry)
+                logger.info(f'تم إرسال إيميل تأكيد للاستعلام {inquiry.get_inquiry_id()}')
+            except Exception as e:
+                logger.warning(f'فشل إرسال إيميل تأكيد: {str(e)}')
+            
+            # إرسال إشعار للموظفين
+            try:
+                email_service.notify_staff_new_inquiry(inquiry)
+                logger.info(f'تم إرسال إشعار للموظفين عن الاستعلام {inquiry.get_inquiry_id()}')
+            except Exception as e:
+                logger.warning(f'فشل إرسال إشعار للموظفين: {str(e)}')
+            
             messages.success(request, f'تم استلام طلب الاستعلام برقم {inquiry.get_inquiry_id()} وسيتم التواصل معكم قريباً عبر البريد الإلكتروني {email}')
             return redirect('services:check_report_status')
         else:
