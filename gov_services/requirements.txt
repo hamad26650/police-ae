@@ -3,7 +3,7 @@ Django==5.2.6
 
 # Database
 psycopg2-binary==2.9.9  # PostgreSQL adapter
-dj-database-url==2.1.0  # Database URL parsing for Railway/Heroku
+dj-database-url==2.1.0  # Database URL parsing for DigitalOcean
 
 # Security
 django-ratelimit==4.1.0  # Rate limiting

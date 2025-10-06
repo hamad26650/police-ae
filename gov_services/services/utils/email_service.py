@@ -32,7 +32,7 @@ class EmailService:
             logger.warning('إعدادات البريد الإلكتروني غير مكتملة - تم حفظ الرد بدون إرسال إيميل')
             return {
                 'success': True,  # نعتبرها ناجحة لأن الرد تم حفظه
-                'message': 'تم حفظ الرد بنجاح. لتفعيل إرسال الإيميلات، يرجى إضافة إعدادات البريد الإلكتروني في Railway Variables.'
+                'message': 'تم حفظ الرد بنجاح. لتفعيل إرسال الإيميلات، يرجى إضافة إعدادات البريد الإلكتروني في DigitalOcean Variables.'
             }
         
         try:
@@ -233,7 +233,7 @@ info@police.ae | +971-6-123-4567
             
             # رسائل خطأ واضحة للمستخدم
             if 'Authentication' in error_msg or '535' in error_msg:
-                user_message = 'تم حفظ الرد بنجاح. فشل إرسال البريد الإلكتروني: خطأ في المصادقة. تحقق من EMAIL_HOST_USER وEMAIL_HOST_PASSWORD في Railway Variables.'
+                user_message = 'تم حفظ الرد بنجاح. فشل إرسال البريد الإلكتروني: خطأ في المصادقة. تحقق من EMAIL_HOST_USER وEMAIL_HOST_PASSWORD في DigitalOcean Variables.'
             elif 'timeout' in error_msg.lower():
                 user_message = 'تم حفظ الرد بنجاح. فشل إرسال البريد الإلكتروني: انتهت مهلة الاتصال.'
             else:

@@ -200,11 +200,9 @@ PASSWORD_HASHERS = [
 ]
 
 # Logging للأحداث الأمنية
-# Check if we're in production (Railway/Render/PythonAnywhere/DigitalOcean/Cloud)
+# Check if we're in production (DigitalOcean/PythonAnywhere/Cloud)
 IS_PRODUCTION = (
-    'RAILWAY_ENVIRONMENT' in os.environ or 
     'WEBSITE_HOSTNAME' in os.environ or 
-    'RENDER' in os.environ or
     'PYTHONANYWHERE_DOMAIN' in os.environ or  # PythonAnywhere
     'DIGITALOCEAN_APP_ID' in os.environ or  # DigitalOcean App Platform
     os.environ.get('DJANGO_DEBUG', 'True') == 'False'  # Explicit production flag
@@ -404,15 +402,13 @@ DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_HOST_USER', 'noreply@police.ae')
 if not EMAIL_HOST_USER or not EMAIL_HOST_PASSWORD:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # يطبع في Console بدلاً من الإرسال
 
-# ========== Railway/Render/Production Configuration ==========
+# ========== DigitalOcean/Production Configuration ==========
 if IS_PRODUCTION:
     DEBUG = False
     
     # Allowed hosts - DigitalOcean App Platform
     allowed_host = (
-        os.environ.get('RAILWAY_PUBLIC_DOMAIN') or 
         os.environ.get('WEBSITE_HOSTNAME') or
-        os.environ.get('RENDER_EXTERNAL_HOSTNAME') or  # Render domain
         os.environ.get('DIGITALOCEAN_APP_DOMAIN') or  # DigitalOcean custom domain
         os.environ.get('APP_URL', '').replace('https://', '').replace('http://', '')  # DigitalOcean APP_URL
     )
@@ -420,7 +416,7 @@ if IS_PRODUCTION:
     # Always allow all hosts in production for DigitalOcean
     ALLOWED_HOSTS = ['*']
     
-    # CSRF Trusted Origins - مهم جداً لـ Railway/Render/DigitalOcean!
+    # CSRF Trusted Origins - مهم جداً لـ DigitalOcean!
     if allowed_host:
         CSRF_TRUSTED_ORIGINS = [
             f'https://{allowed_host}',
@@ -442,7 +438,7 @@ if IS_PRODUCTION:
         )
     
     # Security - Fix for HTTPS behind proxy
-    # DigitalOcean/Railway uses a proxy, tell Django to trust X-Forwarded-Proto header
+    # DigitalOcean uses a proxy, tell Django to trust X-Forwarded-Proto header
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     
     # SSL and Cookie Security
