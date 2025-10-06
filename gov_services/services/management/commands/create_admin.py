@@ -56,25 +56,46 @@ class Command(BaseCommand):
         # ========== إنشاء المراكز ==========
         centers_data = [
             {
-                'name': 'مركز شرطة البحيرة',
+                'name': 'مركز شرطة واسط الشامل',
+                'code': 'WST001',
+                'location': 'واسط، الشارقة',
+                'phone': '+971-6-528-8888',
+                'email': 'wasit@shj.police.ae'
+            },
+            {
+                'name': 'مركز شرطة الغرب الشامل',
+                'code': 'GRB001',
+                'location': 'الغرب، الشارقة',
+                'phone': '+971-6-563-3333',
+                'email': 'gharb@shj.police.ae'
+            },
+            {
+                'name': 'مركز شرطة البحيرة الشامل',
                 'code': 'BHR001',
                 'location': 'البحيرة، الشارقة',
-                'phone': '+971-6-528-8888',
+                'phone': '+971-6-531-1111',
                 'email': 'buhaira@shj.police.ae'
             },
             {
-                'name': 'مركز شرطة القاسمية',
-                'code': 'QAS001',
-                'location': 'القاسمية، الشارقة',
-                'phone': '+971-6-563-3333',
-                'email': 'qasimia@shj.police.ae'
+                'name': 'مركز شرطة الصناعية الشامل',
+                'code': 'SNA001',
+                'location': 'الصناعية، الشارقة',
+                'phone': '+971-6-532-2222',
+                'email': 'sinaiya@shj.police.ae'
             },
             {
-                'name': 'مركز شرطة الخان',
-                'code': 'KHN001',
-                'location': 'الخان، الشارقة',
-                'phone': '+971-6-531-1111',
-                'email': 'khan@shj.police.ae'
+                'name': 'مركز شرطة الصجعة الشامل',
+                'code': 'SJA001',
+                'location': 'الصجعة، الشارقة',
+                'phone': '+971-6-533-3333',
+                'email': 'sajaa@shj.police.ae'
+            },
+            {
+                'name': 'مركز شرطة السيوح الشامل',
+                'code': 'SYH001',
+                'location': 'السيوح، الشارقة',
+                'phone': '+971-6-534-4444',
+                'email': 'sayouh@shj.police.ae'
             },
         ]
         
