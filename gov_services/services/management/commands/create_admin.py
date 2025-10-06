@@ -114,6 +114,55 @@ class Command(BaseCommand):
                 self.style.SUCCESS(f'✅ تم إنشاء {centers_created} مركز')
             )
         
+        # ========== إنشاء استعلامات تجريبية ==========
+        from services.models import Inquiry
+        from django.utils import timezone
+        
+        sample_inquiries = [
+            {
+                'inquiry_type': 'report_status',
+                'police_center': 'مركز شرطة واسط الشامل',
+                'report_number': '1234',
+                'report_year': '2024',
+                'phone': 'test1@example.com',
+                'message': 'استعلام عن بلاغ رقم 1234/2024 في مركز شرطة واسط الشامل'
+            },
+            {
+                'inquiry_type': 'report_status',
+                'police_center': 'مركز شرطة الغرب الشامل',
+                'report_number': '5678',
+                'report_year': '2024',
+                'phone': 'test2@example.com',
+                'message': 'استعلام عن بلاغ رقم 5678/2024 في مركز شرطة الغرب الشامل'
+            },
+            {
+                'inquiry_type': 'report_status',
+                'police_center': 'مركز شرطة البحيرة الشامل',
+                'report_number': '9012',
+                'report_year': '2024',
+                'phone': 'test3@example.com',
+                'message': 'استعلام عن بلاغ رقم 9012/2024 في مركز شرطة البحيرة الشامل',
+                'is_resolved': True,
+                'response': 'تم حل البلاغ بنجاح. شكراً لكم.'
+            }
+        ]
+        
+        inquiries_created = 0
+        for inquiry_data in sample_inquiries:
+            inquiry, created = Inquiry.objects.get_or_create(
+                report_number=inquiry_data['report_number'],
+                report_year=inquiry_data['report_year'],
+                defaults=inquiry_data
+            )
+            if created:
+                inquiries_created += 1
+                self.stdout.write(f'  ✅ {inquiry.get_inquiry_id()}')
+        
+        if inquiries_created > 0:
+            self.stdout.write(
+                self.style.SUCCESS(f'✅ تم إنشاء {inquiries_created} استعلام تجريبي')
+            )
+        
         # ========== عرض معلومات الدخول ==========
         self.stdout.write('━' * 60)
         self.stdout.write(self.style.SUCCESS('🎉 تم إعداد النظام بنجاح!'))
@@ -123,4 +172,5 @@ class Command(BaseCommand):
         self.stdout.write(f'  🔑 كلمة المرور: {password}')
         self.stdout.write('━' * 60)
         self.stdout.write(f'📊 عدد المراكز: {Center.objects.count()}')
+        self.stdout.write(f'📊 عدد الاستعلامات: {Inquiry.objects.count()}')
         self.stdout.write('━' * 60)
