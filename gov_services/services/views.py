@@ -203,23 +203,8 @@ def staff_login(request):
                     request.session.save()  # حفظ الـ session بشكل صريح
                     logger.info(f'تسجيل دخول ناجح: {username} من IP: {get_client_ip(request)}')
                     
-                    # حل جذري: إعادة توجيه مباشر بدون Django redirect
-                    from django.http import HttpResponse
-                    response = HttpResponse('''
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <meta http-equiv="refresh" content="0;url=/staff/dashboard/">
-                        <script>window.location.href = '/staff/dashboard/';</script>
-                    </head>
-                    <body>
-                        <p>جاري التوجيه...</p>
-                        <script>setTimeout(function(){ window.location.href = '/staff/dashboard/'; }, 100);</script>
-                    </body>
-                    </html>
-                    ''')
-                    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-                    return response
+                    # حل بسيط: عرض لوحة التحكم مباشرة
+                    return staff_dashboard(request)
                 else:
                     # التحقق من وجود ملف شخصي للموظفين العاديين
                     try:
@@ -228,23 +213,8 @@ def staff_login(request):
                         request.session.save()  # حفظ الـ session بشكل صريح
                         logger.info(f'تسجيل دخول موظف: {username} من IP: {get_client_ip(request)}')
                         
-                        # حل جذري: إعادة توجيه مباشر بدون Django redirect
-                        from django.http import HttpResponse
-                        response = HttpResponse('''
-                        <!DOCTYPE html>
-                        <html>
-                        <head>
-                            <meta http-equiv="refresh" content="0;url=/staff/dashboard/">
-                            <script>window.location.href = '/staff/dashboard/';</script>
-                        </head>
-                        <body>
-                            <p>جاري التوجيه...</p>
-                            <script>setTimeout(function(){ window.location.href = '/staff/dashboard/'; }, 100);</script>
-                        </body>
-                        </html>
-                        ''')
-                        response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-                        return response
+                        # حل بسيط: عرض لوحة التحكم مباشرة
+                        return staff_dashboard(request)
                     except EmployeeProfile.DoesNotExist:
                         logger.warning(f'محاولة دخول غير مصرح بها: {username} من IP: {get_client_ip(request)}')
                         messages.error(request, 'هذا الحساب غير مخول للدخول إلى نظام الموظفين')
