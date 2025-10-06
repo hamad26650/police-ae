@@ -180,8 +180,13 @@ PASSWORD_HASHERS = [
 ]
 
 # Logging للأحداث الأمنية
-# Check if we're in production (Railway/Cloud)
-IS_PRODUCTION = 'RAILWAY_ENVIRONMENT' in os.environ or 'WEBSITE_HOSTNAME' in os.environ
+# Check if we're in production (Railway/Render/Cloud)
+IS_PRODUCTION = (
+    'RAILWAY_ENVIRONMENT' in os.environ or 
+    'WEBSITE_HOSTNAME' in os.environ or 
+    'RENDER' in os.environ or
+    'DATABASE_URL' in os.environ  # Render uses PostgreSQL DATABASE_URL
+)
 
 # Configure logging handlers based on environment
 if IS_PRODUCTION:
@@ -322,18 +327,22 @@ DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_HOST_USER', 'noreply@police.ae')
 if not EMAIL_HOST_USER or not EMAIL_HOST_PASSWORD:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # يطبع في Console بدلاً من الإرسال
 
-# ========== Railway/Production Configuration ==========
-if 'RAILWAY_ENVIRONMENT' in os.environ or 'WEBSITE_HOSTNAME' in os.environ:
+# ========== Railway/Render/Production Configuration ==========
+if IS_PRODUCTION:
     import dj_database_url
     
     DEBUG = False
     
     # Allowed hosts
-    allowed_host = os.environ.get('RAILWAY_PUBLIC_DOMAIN') or os.environ.get('WEBSITE_HOSTNAME')
+    allowed_host = (
+        os.environ.get('RAILWAY_PUBLIC_DOMAIN') or 
+        os.environ.get('WEBSITE_HOSTNAME') or
+        os.environ.get('RENDER_EXTERNAL_HOSTNAME')  # Render domain
+    )
     if allowed_host:
         ALLOWED_HOSTS = [allowed_host, 'localhost', '127.0.0.1']
         
-        # CSRF Trusted Origins - مهم جداً لـ Railway!
+        # CSRF Trusted Origins - مهم جداً لـ Railway/Render!
         CSRF_TRUSTED_ORIGINS = [
             f'https://{allowed_host}',
             f'http://{allowed_host}',
