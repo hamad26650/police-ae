@@ -87,6 +87,21 @@ DATABASES = {
     }
 }
 
+# PythonAnywhere MySQL Configuration
+if 'PYTHONANYWHERE_DOMAIN' in os.environ:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': os.environ.get('DB_NAME', ''),
+            'USER': os.environ.get('DB_USER', ''),
+            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+            'HOST': os.environ.get('DB_HOST', ''),
+            'OPTIONS': {
+                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            }
+        }
+    }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -180,12 +195,13 @@ PASSWORD_HASHERS = [
 ]
 
 # Logging للأحداث الأمنية
-# Check if we're in production (Railway/Render/Cloud)
+# Check if we're in production (Railway/Render/PythonAnywhere/Cloud)
 IS_PRODUCTION = (
     'RAILWAY_ENVIRONMENT' in os.environ or 
     'WEBSITE_HOSTNAME' in os.environ or 
     'RENDER' in os.environ or
-    'DATABASE_URL' in os.environ  # Render uses PostgreSQL DATABASE_URL
+    'DATABASE_URL' in os.environ or  # Render uses PostgreSQL DATABASE_URL
+    'PYTHONANYWHERE_DOMAIN' in os.environ  # PythonAnywhere
 )
 
 # Configure logging handlers based on environment
@@ -378,3 +394,27 @@ if IS_PRODUCTION:
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
+
+# ========== PythonAnywhere Configuration ==========
+if 'PYTHONANYWHERE_DOMAIN' in os.environ:
+    DEBUG = False
+    
+    # Allowed hosts
+    pythonanywhere_domain = os.environ.get('PYTHONANYWHERE_DOMAIN')
+    if pythonanywhere_domain:
+        ALLOWED_HOSTS = [pythonanywhere_domain, 'localhost', '127.0.0.1']
+        
+        # CSRF Trusted Origins
+        CSRF_TRUSTED_ORIGINS = [
+            f'https://{pythonanywhere_domain}',
+            f'http://{pythonanywhere_domain}',
+        ]
+    
+    # Static files
+    STATIC_ROOT = BASE_DIR.parent / 'static'
+    STATIC_URL = '/static/'
+    
+    # Security settings (optional for free tier, enable for paid)
+    # SECURE_SSL_REDIRECT = True
+    # SESSION_COOKIE_SECURE = True
+    # CSRF_COOKIE_SECURE = True
