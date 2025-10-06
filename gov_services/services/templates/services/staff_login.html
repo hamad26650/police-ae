@@ -2,7 +2,11 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#73b9ff">
     <title>تسجيل دخول الموظفين - بوابة الخدمات الحكومية</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
@@ -359,6 +363,14 @@
 
         /* Responsive */
         @media (max-width: 768px) {
+            body {
+                padding: 20px 0;
+            }
+
+            .login-wrapper {
+                padding: 0 20px;
+            }
+
             .login-container {
                 padding: 2.5rem 2rem;
             }
@@ -375,6 +387,23 @@
 
             .login-subtitle {
                 font-size: 1rem;
+            }
+
+            .form-input {
+                padding: 1rem 1rem 1rem 3rem;
+                font-size: 1rem;
+                border-radius: 12px;
+            }
+
+            .input-icon {
+                left: 1rem;
+                font-size: 1.1rem;
+            }
+
+            .login-button {
+                padding: 1.1rem;
+                font-size: 1.05rem;
+                border-radius: 12px;
             }
 
             .theme-toggle,
@@ -396,36 +425,65 @@
             .back-link i {
                 font-size: 1.1rem;
             }
+
+            .error-message,
+            .success-message {
+                padding: 1rem;
+                font-size: 0.95rem;
+            }
         }
 
         @media (max-width: 480px) {
+            body {
+                padding: 15px 0;
+                min-height: 100vh;
+            }
+
             .login-wrapper {
                 padding: 0 15px;
+                max-width: 100%;
             }
 
             .login-container {
                 padding: 2rem 1.5rem;
                 border-radius: 20px;
+                box-shadow: 0 10px 40px var(--shadow-color);
             }
 
             .login-icon {
-                width: 65px;
-                height: 65px;
+                width: 70px;
+                height: 70px;
                 font-size: 1.8rem;
-                margin-bottom: 1rem;
+                margin-bottom: 1.2rem;
             }
 
             .login-title {
-                font-size: 1.6rem;
+                font-size: 1.5rem;
+                margin-bottom: 0.5rem;
             }
 
             .login-subtitle {
-                font-size: 0.95rem;
+                font-size: 0.9rem;
+            }
+
+            .login-header {
+                margin-bottom: 2rem;
+            }
+
+            .form-group {
+                margin-bottom: 1.3rem;
+            }
+
+            .form-label {
+                font-size: 0.9rem;
+                margin-bottom: 0.5rem;
             }
 
             .form-input {
-                padding: 0.9rem 0.9rem 0.9rem 2.8rem;
+                padding: 1rem 1rem 1rem 2.8rem;
                 font-size: 0.95rem;
+                border-radius: 12px;
+                border-width: 1.5px;
             }
 
             .input-icon {
@@ -433,15 +491,30 @@
                 font-size: 1rem;
             }
 
+            .remember-me {
+                margin-bottom: 1.3rem;
+                gap: 0.5rem;
+            }
+
+            .remember-me input[type="checkbox"] {
+                width: 18px;
+                height: 18px;
+            }
+
+            .remember-me label {
+                font-size: 0.85rem;
+            }
+
             .login-button {
                 padding: 1rem;
                 font-size: 1rem;
+                border-radius: 12px;
             }
 
             .theme-toggle,
             .back-link {
-                width: 45px;
-                height: 45px;
+                width: 48px;
+                height: 48px;
                 top: 1rem;
             }
 
@@ -458,12 +531,121 @@
                 font-size: 1rem;
             }
 
-            .form-label {
+            .error-message,
+            .success-message {
+                padding: 0.9rem;
+                font-size: 0.9rem;
+                border-radius: 10px;
+            }
+        }
+
+        /* Very small screens */
+        @media (max-width: 360px) {
+            .login-wrapper {
+                padding: 0 12px;
+            }
+
+            .login-container {
+                padding: 1.5rem 1.2rem;
+            }
+
+            .login-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5rem;
+            }
+
+            .login-title {
+                font-size: 1.3rem;
+            }
+
+            .login-subtitle {
+                font-size: 0.85rem;
+            }
+
+            .form-input {
+                padding: 0.9rem 0.9rem 0.9rem 2.5rem;
                 font-size: 0.9rem;
             }
 
-            .remember-me label {
+            .login-button {
+                padding: 0.9rem;
+                font-size: 0.95rem;
+            }
+
+            .theme-toggle,
+            .back-link {
+                width: 42px;
+                height: 42px;
+                top: 0.8rem;
+            }
+
+            .theme-toggle {
+                left: 0.8rem;
+            }
+
+            .back-link {
+                right: 0.8rem;
+            }
+        }
+
+        /* Landscape orientation on mobile */
+        @media (max-width: 768px) and (orientation: landscape) {
+            body {
+                padding: 10px 0;
+            }
+
+            .login-container {
+                padding: 1.5rem 2rem;
+            }
+
+            .login-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 1.6rem;
+                margin-bottom: 0.8rem;
+            }
+
+            .login-header {
+                margin-bottom: 1.5rem;
+            }
+
+            .login-title {
+                font-size: 1.4rem;
+            }
+
+            .login-subtitle {
                 font-size: 0.9rem;
+            }
+
+            .form-group {
+                margin-bottom: 1rem;
+            }
+
+            .remember-me {
+                margin-bottom: 1rem;
+            }
+        }
+
+        /* Touch device improvements */
+        @media (hover: none) and (pointer: coarse) {
+            .form-input,
+            .login-button,
+            .theme-toggle,
+            .back-link,
+            .remember-me input[type="checkbox"] {
+                -webkit-tap-highlight-color: transparent;
+                touch-action: manipulation;
+            }
+
+            .login-button {
+                min-height: 48px;
+            }
+
+            .theme-toggle,
+            .back-link {
+                min-height: 44px;
+                min-width: 44px;
             }
         }
     </style>
@@ -503,17 +685,36 @@
                 {% endfor %}
             {% endif %}
 
-            <form method="post" action="{% url 'services:staff_login' %}" id="loginForm">
+            <form method="post" action="{% url 'services:staff_login' %}" id="loginForm" autocomplete="on">
                 {% csrf_token %}
                 <div class="form-group">
                     <label for="username" class="form-label">اسم المستخدم</label>
-                    <input type="text" id="username" name="username" class="form-input" required autocomplete="username">
+                    <input 
+                        type="text" 
+                        id="username" 
+                        name="username" 
+                        class="form-input" 
+                        required 
+                        autocomplete="username"
+                        autocapitalize="off"
+                        autocorrect="off"
+                        spellcheck="false"
+                        inputmode="text">
                     <i class="fas fa-user input-icon"></i>
                 </div>
 
                 <div class="form-group">
                     <label for="password" class="form-label">كلمة المرور</label>
-                    <input type="password" id="password" name="password" class="form-input" required autocomplete="current-password">
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password" 
+                        class="form-input" 
+                        required 
+                        autocomplete="current-password"
+                        autocapitalize="off"
+                        autocorrect="off"
+                        spellcheck="false">
                     <i class="fas fa-lock input-icon"></i>
                 </div>
 
