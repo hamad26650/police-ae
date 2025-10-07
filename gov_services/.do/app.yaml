@@ -1,0 +1,25 @@
+name: gov-services-portal
+region: fra
+services:
+- name: web
+  github:
+    branch: main
+    deploy_on_push: true
+    repo: hamad26650/gov-services-portal
+  source_dir: /gov_services
+  run_command: gunicorn --worker-tmp-dir /dev/shm gov_services.wsgi
+  environment_slug: python
+  instance_count: 1
+  instance_size_slug: basic-xxs
+  envs:
+  - key: DEBUG
+    value: "False"
+  - key: ALLOWED_HOSTS
+    value: ".ondigitalocean.app"
+  - key: DATABASE_URL
+    scope: RUN_AND_BUILD_TIME
+    type: SECRET
+databases:
+- engine: PG
+  name: db
+  production: true

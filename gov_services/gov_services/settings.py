@@ -391,5 +391,30 @@ DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_HOST_USER', 'noreply@police.ae')
 if not EMAIL_HOST_USER or not EMAIL_HOST_PASSWORD:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # يطبع في Console بدلاً من الإرسال
 
-# ========== Local Development Only ==========
-# All production configurations removed for local development
+# ========== Production Settings (DigitalOcean) ==========
+if 'DATABASE_URL' in os.environ:
+    import dj_database_url
+    
+    DEBUG = False
+    ALLOWED_HOSTS = ['.ondigitalocean.app', 'octopus-app-glkh4.ondigitalocean.app']
+    
+    # Database
+    DATABASES = {
+        'default': dj_database_url.config(
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
+    
+    # Security
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = 'DENY'
+    
+    # Static files
+    MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+    STATIC_ROOT = BASE_DIR / 'staticfiles'
