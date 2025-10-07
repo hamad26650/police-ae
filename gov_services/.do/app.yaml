@@ -7,12 +7,11 @@ services:
     deploy_on_push: true
     repo: hamad26650/gov-services-portal
   source_dir: /gov_services
-  build_command: pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate
-  run_command: gunicorn --worker-tmp-dir /dev/shm --workers 2 --bind 0.0.0.0:8080 gov_services.wsgi:application
-  environment_slug: python
+  dockerfile_path: Dockerfile
+  http_port: 8080
   instance_count: 1
   instance_size_slug: basic-xxs
-  http_port: 8080
+  run_command: python manage.py migrate && gunicorn --worker-tmp-dir /dev/shm --workers 2 --bind 0.0.0.0:8080 gov_services.wsgi:application
   envs:
   - key: DEBUG
     value: "False"
