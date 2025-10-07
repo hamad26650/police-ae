@@ -401,14 +401,14 @@ if 'DATABASE_URL' in os.environ:
     DEBUG = False
     ALLOWED_HOSTS = [
         '.ondigitalocean.app', 
-        'octopus-app-glkh4.ondigitalocean.app',
+        'shark-app-kenq6.ondigitalocean.app',
         '*.ondigitalocean.app',  # جميع نطاقات DigitalOcean
     ]
     
     # CSRF Trusted Origins - للسماح بالطلبات من الهواتف والمتصفحات
     CSRF_TRUSTED_ORIGINS = [
         'https://*.ondigitalocean.app',
-        'https://octopus-app-glkh4.ondigitalocean.app',
+        'https://shark-app-kenq6.ondigitalocean.app',
     ]
     
     # Database
