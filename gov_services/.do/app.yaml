@@ -11,7 +11,7 @@ services:
   http_port: 8080
   instance_count: 1
   instance_size_slug: basic-xxs
-  run_command: python manage.py migrate && gunicorn --worker-tmp-dir /dev/shm --workers 2 --bind 0.0.0.0:8080 gov_services.wsgi:application
+  run_command: python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn --worker-tmp-dir /dev/shm --workers 2 --bind 0.0.0.0:8080 gov_services.wsgi:application
   envs:
   - key: DEBUG
     value: "False"
