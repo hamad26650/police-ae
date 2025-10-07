@@ -44,6 +44,12 @@ urlpatterns = [
     # نظام الاستعلامات
     path('staff/respond-inquiry/<int:inquiry_id>/', views.respond_to_inquiry, name='respond_to_inquiry'),
     
+    # نظام حجز الطلبات (جديد)
+    path('staff/reserve-inquiry/<int:inquiry_id>/', views.reserve_inquiry, name='reserve_inquiry'),
+    path('staff/unreserve-inquiry/<int:inquiry_id>/', views.unreserve_inquiry, name='unreserve_inquiry'),
+    path('staff/reject-inquiry/<int:inquiry_id>/', views.reject_inquiry, name='reject_inquiry'),
+    path('staff/respond-inquiry-new/<int:inquiry_id>/', views.respond_inquiry, name='respond_inquiry'),
+    
     # روابط وهمية للصفحات غير المتاحة
     path('inquiry/', redirect_to_home, name='inquiry'),
     path('about/', redirect_to_home, name='about'),

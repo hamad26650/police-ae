@@ -181,9 +181,22 @@ class Inquiry(models.Model):
     report_number = models.CharField(max_length=10, blank=True, verbose_name="رقم البلاغ")
     report_year = models.CharField(max_length=4, blank=True, verbose_name="سنة البلاغ")
     
+    # حالة الاستعلام
+    STATUS_CHOICES = [
+        ('pending', 'قيد الانتظار'),
+        ('resolved', 'تم الرد'),
+        ('rejected', 'مرفوض'),
+    ]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name="الحالة")
+    
+    # حجز الطلب
+    reserved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='reserved_inquiries', verbose_name="محجوز بواسطة")
+    reserved_at = models.DateTimeField(null=True, blank=True, verbose_name="تاريخ الحجز")
+    
     is_resolved = models.BooleanField(default=False, verbose_name="تم الحل")
     response = models.TextField(blank=True, verbose_name="الرد")
-    responded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="رد بواسطة")
+    rejection_reason = models.TextField(blank=True, verbose_name="سبب الرفض")
+    responded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='responded_inquiries', verbose_name="رد بواسطة")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاريخ الإرسال")
     resolved_at = models.DateTimeField(null=True, blank=True, verbose_name="تاريخ الحل")
     

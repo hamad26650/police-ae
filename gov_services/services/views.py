@@ -182,8 +182,6 @@ def check_report_status(request):
 
 # ========== نظام الموظفين ==========
 
-@track_failed_login(max_attempts=5, lockout_time=900)  # 5 محاولات، قفل 15 دقيقة
-@rate_limit(key_prefix='staff_login', limit=10, period=600)  # 10 محاولات كل 10 دقائق
 def staff_login(request):
     """صفحة تسجيل دخول الموظفين"""
     if request.user.is_authenticated:
@@ -215,21 +213,29 @@ def staff_login(request):
                         )
                     # تسجيل الدخول
                     login(request, user)
-                    request.session.save()  # حفظ الـ session بشكل صريح
                     logger.info(f'تسجيل دخول ناجح: {username} من IP: {get_client_ip(request)}')
                     
-                    # حل بسيط: عرض لوحة التحكم مباشرة
-                    return staff_dashboard(request)
+                    # مسح بيانات النموذج من الـ session
+                    messages.success(request, f'مرحباً {user.get_full_name() or user.username}!')
+                    
+                    # إعادة التوجيه إلى لوحة التحكم
+                    response = redirect('services:staff_dashboard')
+                    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+                    return response
                 else:
                     # التحقق من وجود ملف شخصي للموظفين العاديين
                     try:
                         employee_profile = EmployeeProfile.objects.get(user=user)
                         login(request, user)
-                        request.session.save()  # حفظ الـ session بشكل صريح
                         logger.info(f'تسجيل دخول موظف: {username} من IP: {get_client_ip(request)}')
                         
-                        # حل بسيط: عرض لوحة التحكم مباشرة
-                        return staff_dashboard(request)
+                        # مسح بيانات النموذج من الـ session
+                        messages.success(request, f'مرحباً {user.get_full_name() or user.username}!')
+                        
+                        # إعادة التوجيه إلى لوحة التحكم
+                        response = redirect('services:staff_dashboard')
+                        response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+                        return response
                     except EmployeeProfile.DoesNotExist:
                         logger.warning(f'محاولة دخول غير مصرح بها: {username} من IP: {get_client_ip(request)}')
                         messages.error(request, 'هذا الحساب غير مخول للدخول إلى نظام الموظفين')
@@ -257,15 +263,17 @@ def staff_logout(request):
 @login_required(login_url='services:staff_login')
 def staff_dashboard(request):
     """لوحة تحكم الموظفين"""
+    # التأكد من أن المستخدم مسجل دخول
+    if not request.user.is_authenticated:
+        return redirect('services:staff_login')
+    
     # التحقق من الصلاحيات
     if not (request.user.is_superuser or request.user.is_staff):
         messages.error(request, 'غير مخول للوصول')
         return redirect('services:staff_login')
     
-    # رسالة ترحيب في أول زيارة
-    if not request.session.get('welcomed', False):
-        messages.success(request, f'مرحباً {request.user.get_full_name() or request.user.username}!')
-        request.session['welcomed'] = True
+    # رسالة الترحيب تم نقلها لصفحة تسجيل الدخول
+    # لتجنب تكرار الرسائل
     
     # محاولة الحصول على ملف الموظف أو إنشاؤه للمدراء
     try:
@@ -289,23 +297,23 @@ def staff_dashboard(request):
     # فلترة حسب الحالة إذا تم تحديدها
     status_filter = request.GET.get('status')
     if status_filter == 'resolved':
-        inquiries = inquiries.filter(is_resolved=True)
+        inquiries = inquiries.filter(status='resolved')
     elif status_filter == 'pending':
-        inquiries = inquiries.filter(is_resolved=False)
+        inquiries = inquiries.filter(status='pending')
+    elif status_filter == 'rejected':
+        inquiries = inquiries.filter(status='rejected')
     
-    # البحث في النص
+    # البحث عن طريق رقم المرجع فقط (مطابقة تامة)
     search_query = request.GET.get('search')
     if search_query:
-        inquiries = inquiries.filter(
-            Q(phone__icontains=search_query) |
-            Q(report_number__icontains=search_query) |
-            Q(police_center__icontains=search_query)
-        )
+        inquiries = inquiries.filter(id__exact=search_query.strip())
     
     # إحصائيات
-    total_inquiries = inquiries.count()
-    pending_inquiries = inquiries.filter(is_resolved=False).count()
-    resolved_inquiries = inquiries.filter(is_resolved=True).count()
+    all_inquiries = Inquiry.objects.filter(inquiry_type='report_status')
+    total_inquiries = all_inquiries.count()
+    pending_inquiries = all_inquiries.filter(status='pending').count()
+    resolved_inquiries = all_inquiries.filter(status='resolved').count()
+    rejected_inquiries = all_inquiries.filter(status='rejected').count()
     
     context = {
         'employee_profile': employee_profile,
@@ -315,6 +323,8 @@ def staff_dashboard(request):
         'total_inquiries': total_inquiries,
         'pending_inquiries': pending_inquiries,
         'resolved_inquiries': resolved_inquiries,
+        'rejected_inquiries': rejected_inquiries,
+        'current_user': request.user,  # للتحقق من حجز الطلبات
     }
     
     return render(request, 'services/staff_dashboard.html', context)
@@ -572,3 +582,160 @@ def respond_to_inquiry(request, inquiry_id):
     except EmployeeProfile.DoesNotExist:
         logger.error(f'محاولة الرد بدون ملف موظف: {request.user.username} من IP: {get_client_ip(request)}')
         return JsonResponse({'success': False, 'message': 'خطأ في الوصول للبيانات'})
+
+
+# ===================== نظام حجز الطلبات =====================
+
+@login_required(login_url='services:staff_login')
+def reserve_inquiry(request, inquiry_id):
+    """حجز طلب للموظف"""
+    if request.method == 'POST':
+        try:
+            inquiry = Inquiry.objects.get(id=inquiry_id, inquiry_type='report_status')
+            
+            # التحقق من أن الطلب غير محجوز
+            if inquiry.reserved_by:
+                return JsonResponse({
+                    'success': False,
+                    'message': f'هذا الطلب محجوز بالفعل من قبل {inquiry.reserved_by.get_full_name() or inquiry.reserved_by.username}'
+                })
+            
+            # حجز الطلب
+            inquiry.reserved_by = request.user
+            inquiry.reserved_at = timezone.now()
+            inquiry.save()
+            
+            logger.info(f'حجز طلب #{inquiry.id} بواسطة {request.user.username}')
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'تم حجز الطلب بنجاح'
+            })
+            
+        except Inquiry.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'الطلب غير موجود'})
+        except Exception as e:
+            logger.error(f'خطأ في حجز الطلب: {str(e)}')
+            return JsonResponse({'success': False, 'message': 'حدث خطأ أثناء حجز الطلب'})
+    
+    return JsonResponse({'success': False, 'message': 'طريقة غير صحيحة'})
+
+
+@login_required(login_url='services:staff_login')
+def unreserve_inquiry(request, inquiry_id):
+    """فك حجز طلب"""
+    if request.method == 'POST':
+        try:
+            inquiry = Inquiry.objects.get(id=inquiry_id, inquiry_type='report_status')
+            
+            # التحقق من أن الطلب محجوز من قبل الموظف الحالي أو أنه مدير
+            if inquiry.reserved_by != request.user and not request.user.is_superuser:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'لا يمكنك فك حجز طلب محجوز من قبل موظف آخر'
+                })
+            
+            # فك الحجز
+            inquiry.reserved_by = None
+            inquiry.reserved_at = None
+            inquiry.save()
+            
+            logger.info(f'فك حجز طلب #{inquiry.id} بواسطة {request.user.username}')
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'تم فك حجز الطلب بنجاح'
+            })
+            
+        except Inquiry.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'الطلب غير موجود'})
+        except Exception as e:
+            logger.error(f'خطأ في فك حجز الطلب: {str(e)}')
+            return JsonResponse({'success': False, 'message': 'حدث خطأ أثناء فك حجز الطلب'})
+    
+    return JsonResponse({'success': False, 'message': 'طريقة غير صحيحة'})
+
+
+@login_required(login_url='services:staff_login')
+def reject_inquiry(request, inquiry_id):
+    """رفض طلب"""
+    if request.method == 'POST':
+        try:
+            inquiry = Inquiry.objects.get(id=inquiry_id, inquiry_type='report_status')
+            rejection_reason = request.POST.get('rejection_reason', '').strip()
+            
+            if not rejection_reason:
+                return JsonResponse({'success': False, 'message': 'يرجى كتابة سبب الرفض'})
+            
+            # التحقق من أن الطلب محجوز من قبل الموظف الحالي
+            if inquiry.reserved_by != request.user and not request.user.is_superuser:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'يجب حجز الطلب أولاً قبل رفضه'
+                })
+            
+            # رفض الطلب
+            inquiry.status = 'rejected'
+            inquiry.rejection_reason = rejection_reason
+            inquiry.response = f"تم رفض الطلب. السبب: {rejection_reason}"
+            inquiry.is_resolved = True
+            inquiry.responded_by = request.user
+            inquiry.resolved_at = timezone.now()
+            inquiry.save()
+            
+            logger.info(f'رفض طلب #{inquiry.id} بواسطة {request.user.username}')
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'تم رفض الطلب بنجاح'
+            })
+            
+        except Inquiry.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'الطلب غير موجود'})
+        except Exception as e:
+            logger.error(f'خطأ في رفض الطلب: {str(e)}')
+            return JsonResponse({'success': False, 'message': 'حدث خطأ أثناء رفض الطلب'})
+    
+    return JsonResponse({'success': False, 'message': 'طريقة غير صحيحة'})
+
+
+@login_required(login_url='services:staff_login')
+def respond_inquiry(request, inquiry_id):
+    """الرد على طلب"""
+    if request.method == 'POST':
+        try:
+            inquiry = Inquiry.objects.get(id=inquiry_id, inquiry_type='report_status')
+            response_text = request.POST.get('response_text', '').strip()
+            
+            if not response_text:
+                return JsonResponse({'success': False, 'message': 'يرجى كتابة الرد'})
+            
+            # التحقق من أن الطلب محجوز من قبل الموظف الحالي
+            if inquiry.reserved_by != request.user and not request.user.is_superuser:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'يجب حجز الطلب أولاً قبل الرد عليه'
+                })
+            
+            # الرد على الطلب
+            inquiry.status = 'resolved'
+            inquiry.response = response_text
+            inquiry.is_resolved = True
+            inquiry.responded_by = request.user
+            inquiry.resolved_at = timezone.now()
+            inquiry.save()
+            
+            logger.info(f'تم الرد على طلب #{inquiry.id} بواسطة {request.user.username}')
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'تم الرد على الطلب بنجاح'
+            })
+            
+        except Inquiry.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'الطلب غير موجود'})
+        except Exception as e:
+            logger.error(f'خطأ في الرد على الطلب: {str(e)}')
+            return JsonResponse({'success': False, 'message': 'حدث خطأ أثناء الرد على الطلب'})
+    
+    return JsonResponse({'success': False, 'message': 'طريقة غير صحيحة'})

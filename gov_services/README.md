@@ -31,19 +31,15 @@
 ## 🛠️ التقنيات المستخدمة
 
 - **Backend:** Django 5.2.6
-- **Database:** SQLite (تطوير) / PostgreSQL (إنتاج)
+- **Database:** SQLite (تطوير محلي)
 - **Frontend:** HTML5, CSS3, JavaScript
 - **Email:** SMTP (Gmail/Outlook)
-- **Deployment:** DigitalOcean App Platform
-- **Static Files:** WhiteNoise
 
 ## 📦 المتطلبات
 
 ```txt
 Django==5.2.6
-whitenoise==6.6.0
-dj-database-url==2.1.0
-psycopg2-binary==2.9.9  # للإنتاج فقط
+python-dotenv==1.0.0  # اختياري
 ```
 
 ## 🚀 التثبيت والتشغيل المحلي
@@ -83,24 +79,6 @@ python manage.py runserver
 
 الموقع سيكون متاحاً على: `http://127.0.0.1:8000`
 
-## 🌐 النشر على DigitalOcean
-
-الموقع منشور حالياً على: **https://octopus-app-glkh4.ondigitalocean.app**
-
-### متغيرات البيئة المطلوبة:
-```bash
-DJANGO_SECRET_KEY=your-secret-key
-DJANGO_DEBUG=False
-EMAIL_HOST_USER=your-email@gmail.com
-EMAIL_HOST_PASSWORD=your-app-password
-DATABASE_URL=postgresql://...  # يتم إنشاؤه تلقائياً
-```
-
-### لإعداد Gmail:
-1. فعّل Two-Factor Authentication
-2. أنشئ App Password من: https://myaccount.google.com/apppasswords
-3. أضف المتغيرات في DigitalOcean Environment Variables
-
 ## 📂 هيكل المشروع
 
 ```
@@ -125,16 +103,16 @@ gov_services/
 └── requirements.txt    # المتطلبات
 ```
 
-## 📧 نظام البريد الإلكتروني
+## 📧 نظام البريد الإلكتروني (اختياري)
 
-النظام يرسل إيميلات تلقائية في الحالات التالية:
+لتفعيل إرسال الإيميلات، أضف المتغيرات التالية في ملف `.env`:
 
-1. **للمواطن:** تأكيد استلام الطلب
-2. **للمواطن:** تأكيد استلام الاستعلام
-3. **للموظفين:** إشعار باستعلام جديد
-4. **للمواطن:** رد من الموظف على الاستعلام
+```bash
+EMAIL_HOST_USER=your-email@gmail.com
+EMAIL_HOST_PASSWORD=your-app-password
+```
 
-جميع الإيميلات بتصميم HTML جميل ومتجاوب.
+**ملاحظة:** إذا لم تضف إعدادات البريد، سيتم طباعة الإيميلات في الـ Console فقط.
 
 ## 🔧 الأوامر المفيدة
 
@@ -143,7 +121,7 @@ gov_services/
 python manage.py createsuperuser
 ```
 
-### جمع الملفات الثابتة:
+### جمع الملفات الثابتة (للإنتاج):
 ```bash
 python manage.py collectstatic
 ```
@@ -175,29 +153,24 @@ python manage.py dumpdata > backup.json
 ## 🛡️ الأمان
 
 ### ميزات الأمان المطبقة:
-- ✅ HTTPS إجباري (في الإنتاج)
 - ✅ CSRF Protection
 - ✅ XSS Protection
 - ✅ Clickjacking Protection
-- ✅ HSTS Headers
 - ✅ Content Security Policy
 - ✅ Rate Limiting
 - ✅ IP Blocking
 - ✅ Session Security
-- ✅ Secure Cookies
 - ✅ Password Hashing (PBKDF2)
 - ✅ Audit Logging
 
-## 📝 الترخيص
+## 📝 للتطوير المحلي فقط
 
-هذا المشروع مطور لصالح شرطة الشارقة - دولة الإمارات العربية المتحدة.
+هذا المشروع معد للتطوير المحلي. لا يحتوي على إعدادات النشر أو الإنتاج.
 
 ## 👥 التواصل
 
-- **الموقع:** https://octopus-app-glkh4.ondigitalocean.app
 - **GitHub:** https://github.com/hamad26650/gov-services-portal
 
 ---
 
 © 2024 شرطة الشارقة - دولة الإمارات العربية المتحدة. جميع الحقوق محفوظة.
-

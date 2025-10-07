@@ -45,7 +45,6 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # For static files serving
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -88,21 +87,6 @@ DATABASES = {
     }
 }
 
-# PythonAnywhere MySQL Configuration
-if 'PYTHONANYWHERE_DOMAIN' in os.environ:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': os.environ.get('DB_NAME', ''),
-            'USER': os.environ.get('DB_USER', ''),
-            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
-            'HOST': os.environ.get('DB_HOST', ''),
-            'OPTIONS': {
-                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-            }
-        }
-    }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -126,27 +110,33 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ar'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Dubai'
 
 USE_I18N = True
 
 USE_TZ = True
+
+# تنسيق التاريخ والوقت - نظام 12 ساعة
+DATE_FORMAT = 'd/m/Y'
+DATETIME_FORMAT = 'd/m/Y - g:i A'  # 12-hour format with AM/PM
+TIME_FORMAT = 'g:i A'  # 12-hour format with AM/PM
+SHORT_DATE_FORMAT = 'd/m/Y'
+SHORT_DATETIME_FORMAT = 'd/m/Y - g:i A'
+
+# استخدام التنسيق المخصص
+USE_L10N = False
 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 STATICFILES_DIRS = [
     BASE_DIR / "services" / "static",
 ]
-
-# WhiteNoise configuration
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -167,17 +157,20 @@ CACHES = {
 # ========== إعدادات الأمان ==========
 
 # Session Security
-SESSION_COOKIE_AGE = 3600  # ساعة واحدة
+SESSION_COOKIE_AGE = 86400  # 24 ساعة
 SESSION_COOKIE_HTTPONLY = True
 SESSION_SAVE_EVERY_REQUEST = True
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # الـ session يستمر حتى لو أغلقت المتصفح
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # Use database sessions
-SESSION_CACHE_ALIAS = 'default'
+SESSION_COOKIE_NAME = 'gov_services_sessionid'
+SESSION_COOKIE_SAMESITE = 'Lax'
 
 # CSRF Protection
 CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript access if needed
 CSRF_COOKIE_SAMESITE = 'Lax'
 CSRF_USE_SESSIONS = False
+CSRF_COOKIE_AGE = 86400  # 24 ساعة
+CSRF_TRUSTED_ORIGINS = ['http://localhost:8000', 'http://127.0.0.1:8000']
 CSRF_COOKIE_SECURE = False  # Will be set to True in production
 
 # XSS Protection
@@ -202,16 +195,10 @@ PASSWORD_HASHERS = [
 ]
 
 # Logging للأحداث الأمنية
-# Check if we're in production (DigitalOcean/PythonAnywhere/Cloud)
-IS_PRODUCTION = (
-    'WEBSITE_HOSTNAME' in os.environ or 
-    'PYTHONANYWHERE_DOMAIN' in os.environ or  # PythonAnywhere
-    'DIGITALOCEAN_APP_ID' in os.environ or  # DigitalOcean App Platform
-    os.environ.get('DJANGO_DEBUG', 'True') == 'False'  # Explicit production flag
-)
+# Local development only - no production environment checks
 
-# Configure logging handlers based on environment
-if IS_PRODUCTION:
+# Configure logging handlers for local development
+if False:  # Disabled production logging
     # Production: Use console logging only
     LOGGING = {
         'version': 1,
@@ -404,83 +391,5 @@ DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_HOST_USER', 'noreply@police.ae')
 if not EMAIL_HOST_USER or not EMAIL_HOST_PASSWORD:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # يطبع في Console بدلاً من الإرسال
 
-# ========== DigitalOcean/Production Configuration ==========
-if IS_PRODUCTION:
-    DEBUG = False
-    
-    # Allowed hosts - DigitalOcean App Platform
-    allowed_host = (
-        os.environ.get('WEBSITE_HOSTNAME') or
-        os.environ.get('DIGITALOCEAN_APP_DOMAIN') or  # DigitalOcean custom domain
-        os.environ.get('APP_URL', '').replace('https://', '').replace('http://', '')  # DigitalOcean APP_URL
-    )
-    
-    # Always allow all hosts in production for DigitalOcean
-    ALLOWED_HOSTS = ['*']
-    
-    # CSRF Trusted Origins - مهم جداً لـ DigitalOcean!
-    if allowed_host:
-        CSRF_TRUSTED_ORIGINS = [
-            f'https://{allowed_host}',
-            f'http://{allowed_host}',
-        ]
-    else:
-        # For DigitalOcean - allow all subdomains
-        CSRF_TRUSTED_ORIGINS = [
-            'https://*.ondigitalocean.app',
-            'https://*.digitaloceanspaces.com',
-        ]
-    
-    # Database
-    if 'DATABASE_URL' in os.environ:
-        import dj_database_url
-        DATABASES['default'] = dj_database_url.config(
-            conn_max_age=600,
-            conn_health_checks=True,
-        )
-    
-    # Security - Fix for HTTPS behind proxy
-    # DigitalOcean uses a proxy, tell Django to trust X-Forwarded-Proto header
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    
-    # SSL and Cookie Security
-    SECURE_SSL_REDIRECT = False  # DigitalOcean handles SSL redirect
-    SESSION_COOKIE_SECURE = False  # Changed to False for debugging
-    SESSION_COOKIE_SAMESITE = 'Lax'
-    SESSION_COOKIE_DOMAIN = None  # Let Django auto-detect
-    SESSION_COOKIE_NAME = 'gov_sessionid'  # Custom session cookie name
-    
-    CSRF_COOKIE_SECURE = False  # Changed to False for debugging
-    CSRF_COOKIE_SAMESITE = 'Lax'
-    CSRF_COOKIE_HTTPONLY = False  # Important for AJAX CSRF handling
-    CSRF_COOKIE_DOMAIN = None  # Let Django auto-detect
-    CSRF_COOKIE_NAME = 'gov_csrftoken'  # Custom CSRF cookie name
-    
-    # HSTS (HTTP Strict Transport Security)
-    SECURE_HSTS_SECONDS = 0  # Disable HSTS for now to avoid issues
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = False
-    SECURE_HSTS_PRELOAD = False
-
-# ========== PythonAnywhere Configuration ==========
-if 'PYTHONANYWHERE_DOMAIN' in os.environ:
-    DEBUG = False
-    
-    # Allowed hosts
-    pythonanywhere_domain = os.environ.get('PYTHONANYWHERE_DOMAIN')
-    if pythonanywhere_domain:
-        ALLOWED_HOSTS = [pythonanywhere_domain, 'localhost', '127.0.0.1']
-        
-        # CSRF Trusted Origins
-        CSRF_TRUSTED_ORIGINS = [
-            f'https://{pythonanywhere_domain}',
-            f'http://{pythonanywhere_domain}',
-        ]
-    
-    # Static files
-    STATIC_ROOT = BASE_DIR.parent / 'static'
-    STATIC_URL = '/static/'
-    
-    # Security settings (optional for free tier, enable for paid)
-    # SECURE_SSL_REDIRECT = True
-    # SESSION_COOKIE_SECURE = True
-    # CSRF_COOKIE_SECURE = True
+# ========== Local Development Only ==========
+# All production configurations removed for local development

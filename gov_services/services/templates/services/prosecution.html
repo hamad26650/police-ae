@@ -358,122 +358,95 @@
             box-shadow: 0 12px 30px rgba(184, 153, 104, 0.4);
         }
 
-        /* Download Section */
-        .download-section {
-            padding: 120px 0;
-            background: linear-gradient(135deg, var(--primary-gold) 0%, var(--primary-gold-dark) 50%, var(--accent-gold) 100%);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .download-section::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -10%;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(255,255,255,0.1), transparent);
-            border-radius: 50%;
-        }
-
-        .download-section::after {
-            content: '';
-            position: absolute;
-            bottom: -50%;
-            left: -10%;
-            width: 500px;
-            height: 500px;
-            background: radial-gradient(circle, rgba(255,255,255,0.08), transparent);
-            border-radius: 50%;
-        }
-
-        .download-container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 0 20px;
-            text-align: center;
-            position: relative;
-            z-index: 2;
-            color: white;
-        }
-
-        .download-title {
-            font-size: 3.5rem;
-            font-weight: 900;
-            margin-bottom: 25px;
-            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        }
-
-        .download-description {
-            font-size: 1.4rem;
-            margin-bottom: 50px;
-            opacity: 0.95;
-            line-height: 1.7;
-        }
-
-        .download-stats {
-            display: flex;
-            justify-content: center;
-            gap: 60px;
-            margin-bottom: 50px;
-        }
-
-        .download-stat {
-            text-align: center;
-        }
-
-        .download-stat-number {
-            font-size: 3rem;
-            font-weight: 900;
-            display: block;
-            margin-bottom: 10px;
-        }
-
-        .download-stat-label {
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
-
-        .rating-stars {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            font-size: 1.8rem;
-            color: #ffd700;
-            margin-bottom: 15px;
-        }
-
-        .app-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 25px;
-            flex-wrap: wrap;
-        }
-
-        .app-btn {
-            background: rgba(255, 255, 255, 0.95);
-            color: var(--primary-gold-dark);
-            padding: 20px 45px;
+        /* Important Notice */
+        .important-notice {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            border: 2px solid #ff9800;
             border-radius: 20px;
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 1.15rem;
-            display: inline-flex;
+            padding: 30px;
+            margin-top: 40px;
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            box-shadow: 0 10px 30px rgba(255, 152, 0, 0.15);
+            animation: pulse-border 2s ease-in-out infinite;
+        }
+
+        [data-theme="dark"] .important-notice {
+            background: linear-gradient(135deg, #3e2723 0%, #4e342e 100%);
+            border-color: #ff9800;
+        }
+
+        @keyframes pulse-border {
+            0%, 100% {
+                box-shadow: 0 10px 30px rgba(255, 152, 0, 0.15);
+            }
+            50% {
+                box-shadow: 0 10px 40px rgba(255, 152, 0, 0.3);
+            }
+        }
+
+        .notice-icon {
+            width: 60px;
+            height: 60px;
+            min-width: 60px;
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            border-radius: 15px;
+            display: flex;
             align-items: center;
-            gap: 15px;
-            transition: all 0.3s ease;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            box-shadow: 0 8px 20px rgba(255, 152, 0, 0.4);
+            animation: bounce-icon 2s ease-in-out infinite;
         }
 
-        .app-btn:hover {
-            background: white;
-            transform: translateY(-5px);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+        @keyframes bounce-icon {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-5px);
+            }
         }
 
-        .app-btn i {
-            font-size: 1.8rem;
+        .notice-content {
+            flex: 1;
+            text-align: right;
+        }
+
+        .notice-title {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #e65100;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        [data-theme="dark"] .notice-title {
+            color: #ffb74d;
+        }
+
+        .notice-text {
+            font-size: 1.1rem;
+            color: #6d4c41;
+            line-height: 1.8;
+            margin: 0;
+        }
+
+        [data-theme="dark"] .notice-text {
+            color: #bcaaa4;
+        }
+
+        .notice-text strong {
+            color: #d84315;
+            font-weight: 900;
+        }
+
+        [data-theme="dark"] .notice-text strong {
+            color: #ff9800;
         }
 
         /* Responsive Design - Keep desktop layout with adjusted sizes */
@@ -553,37 +526,24 @@
                 font-size: 0.9rem;
             }
 
-            .download-section {
-                padding: 80px 0;
+            .important-notice {
+                padding: 25px;
+                gap: 18px;
             }
 
-            .download-title {
-                font-size: 2.5rem;
+            .notice-icon {
+                width: 50px;
+                height: 50px;
+                min-width: 50px;
+                font-size: 1.7rem;
             }
 
-            .download-description {
-                font-size: 1.1rem;
+            .notice-title {
+                font-size: 1.3rem;
             }
 
-            .download-stat-number {
-                font-size: 2rem;
-            }
-
-            .download-stat-label {
-                font-size: 0.95rem;
-            }
-
-            .rating-stars {
-                font-size: 1.4rem;
-            }
-
-            .app-btn {
-                padding: 16px 35px;
+            .notice-text {
                 font-size: 1rem;
-            }
-
-            .app-btn i {
-                font-size: 1.5rem;
             }
         }
 
@@ -682,49 +642,32 @@
                 font-size: 0.85rem;
             }
 
-            .download-section {
-                padding: 60px 0;
+            .important-notice {
+                padding: 20px;
+                gap: 15px;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
             }
 
-            .download-title {
-                font-size: 2rem;
-                margin-bottom: 20px;
+            .notice-icon {
+                width: 45px;
+                height: 45px;
+                min-width: 45px;
+                font-size: 1.5rem;
             }
 
-            .download-description {
-                font-size: 1rem;
-                margin-bottom: 35px;
+            .notice-content {
+                text-align: center;
             }
 
-            .download-stats {
-                gap: 40px;
-                margin-bottom: 40px;
-            }
-
-            .download-stat-number {
-                font-size: 1.8rem;
-            }
-
-            .download-stat-label {
-                font-size: 0.85rem;
-            }
-
-            .rating-stars {
+            .notice-title {
                 font-size: 1.2rem;
-                margin-bottom: 12px;
+                justify-content: center;
             }
 
-            .app-buttons {
-                gap: 18px;
-            }
-
-            .app-btn {
-                padding: 14px 30px;
-                font-size: 0.9rem;
-            }
-
-            .app-btn i {
-                font-size: 1.3rem;
+            .notice-text {
+                font-size: 0.95rem;
             }
         }
 
@@ -823,50 +766,28 @@
                 font-size: 0.8rem;
             }
 
-            .download-section {
-                padding: 50px 0;
-            }
-
-            .download-title {
-                font-size: 1.7rem;
-                margin-bottom: 18px;
-            }
-
-            .download-description {
-                font-size: 0.9rem;
-                margin-bottom: 30px;
-            }
-
-            .download-stats {
-                gap: 30px;
-                margin-bottom: 35px;
-            }
-
-            .download-stat-number {
-                font-size: 1.5rem;
-            }
-
-            .download-stat-label {
-                font-size: 0.75rem;
-            }
-
-            .rating-stars {
-                font-size: 1rem;
-                margin-bottom: 10px;
-            }
-
-            .app-buttons {
-                gap: 15px;
-            }
-
-            .app-btn {
-                padding: 12px 25px;
-                font-size: 0.8rem;
+            .important-notice {
+                padding: 18px;
+                gap: 12px;
                 border-radius: 15px;
             }
 
-            .app-btn i {
+            .notice-icon {
+                width: 40px;
+                height: 40px;
+                min-width: 40px;
+                font-size: 1.3rem;
+                border-radius: 12px;
+            }
+
+            .notice-title {
                 font-size: 1.1rem;
+                margin-bottom: 10px;
+            }
+
+            .notice-text {
+                font-size: 0.85rem;
+                line-height: 1.6;
             }
         }
     </style>
@@ -883,9 +804,9 @@
                         خدمات قانونية متكاملة لضمان العدالة وحماية الحقوق. نسعى لتقديم خدمات قضائية شفافة وعادلة لجميع المواطنين والمقيمين.
                     </p>
                     <div class="hero-cta">
-                        <a href="/digital-identity/" class="btn-primary">
-                            <i class="fas fa-download"></i>
-                            حمّل التطبيق
+                        <a href="https://shjpp.ae/webcenter/portal/oracle/webcenter/page/scopedMD/sb0e4323a_06c8_437c_92bb_cffc9cf56968/Pagee64447ad_e363_4f9d_98b9_fbc41729756d.jspx" target="_blank" class="btn-primary">
+                            <i class="fas fa-external-link-alt"></i>
+                            زيارة الموقع
                         </a>
                         <a href="#services" class="btn-secondary">
                             <i class="fas fa-arrow-down"></i>
@@ -913,6 +834,20 @@
                 <p class="section-description">
                     مجموعة شاملة من الخدمات القانونية والقضائية المتاحة لك على مدار الساعة
                 </p>
+                
+                <!-- Important Notice -->
+                <div class="important-notice">
+                    <div class="notice-icon">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                    <div class="notice-content">
+                        <h3 class="notice-title">تنويه هام</h3>
+                        <p class="notice-text">
+                            الموقع الرسمي للنيابة العامة مخصص <strong>لتقديم العرائض فقط في إمارة الشارقة</strong>. 
+                            للخدمات في الإمارات الأخرى، يرجى مراجعة الجهات المختصة في الإمارة المعنية.
+                        </p>
+                    </div>
+                </div>
             </div>
             <div class="services-grid">
                 <div class="service-card">
@@ -955,47 +890,6 @@
         </div>
     </section>
 
-    <!-- Download Section -->
-    <section class="download-section" id="download">
-        <div class="download-container">
-            <h2 class="download-title">حمّل التطبيق الآن</h2>
-            <p class="download-description">
-                انضم لأكثر من مليون ونصف مستخدم واستمتع بتجربة رقمية سلسة وآمنة
-            </p>
-            
-            <div class="download-stats">
-                <div class="download-stat">
-                    <span class="download-stat-number">+1.5M</span>
-                    <span class="download-stat-label">تحميل</span>
-                </div>
-                <div class="download-stat">
-                    <div class="rating-stars">
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star-half-alt"></i>
-                    </div>
-                    <span class="download-stat-label">تقييم 4.8 من 5</span>
-                </div>
-                <div class="download-stat">
-                    <span class="download-stat-number">+60K</span>
-                    <span class="download-stat-label">مراجعة</span>
-                </div>
-            </div>
-
-            <div class="app-buttons">
-                <a href="#" class="app-btn">
-                    <i class="fab fa-google-play"></i>
-                    تحميل من Google Play
-                </a>
-                <a href="#" class="app-btn">
-                    <i class="fab fa-app-store-ios"></i>
-                    تحميل من App Store
-                </a>
-            </div>
-        </div>
-    </section>
 {% endblock %}
 
 {% block extra_js %}
