@@ -7,19 +7,29 @@ services:
     deploy_on_push: true
     repo: hamad26650/gov-services-portal
   source_dir: /gov_services
-  run_command: gunicorn --worker-tmp-dir /dev/shm gov_services.wsgi
+  build_command: pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate
+  run_command: gunicorn --worker-tmp-dir /dev/shm --workers 2 --bind 0.0.0.0:8080 gov_services.wsgi:application
   environment_slug: python
   instance_count: 1
   instance_size_slug: basic-xxs
+  http_port: 8080
   envs:
   - key: DEBUG
     value: "False"
-  - key: ALLOWED_HOSTS
-    value: ".ondigitalocean.app"
+  - key: DJANGO_SECRET_KEY
+    scope: RUN_AND_BUILD_TIME
+    type: SECRET
   - key: DATABASE_URL
+    scope: RUN_AND_BUILD_TIME
+    type: SECRET
+  - key: EMAIL_HOST_USER
+    scope: RUN_AND_BUILD_TIME
+    type: SECRET
+  - key: EMAIL_HOST_PASSWORD
     scope: RUN_AND_BUILD_TIME
     type: SECRET
 databases:
 - engine: PG
   name: db
   production: true
+  version: "12"

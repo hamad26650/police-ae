@@ -387,16 +387,29 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_HOST_USER', 'noreply@police.ae')
 
-# تعطيل البريد الإلكتروني مؤقتاً في حال عدم توفر الإعدادات
+# تفعيل البريد الإلكتروني في الإنتاج فقط
+# في التطوير المحلي: إذا لم تكن الإعدادات موجودة، استخدم Console
 if not EMAIL_HOST_USER or not EMAIL_HOST_PASSWORD:
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # يطبع في Console بدلاً من الإرسال
+    if 'DATABASE_URL' not in os.environ:  # محلي فقط
+        EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    # في الإنتاج: سيتم استخدام SMTP الحقيقي من متغيرات البيئة
 
 # ========== Production Settings (DigitalOcean) ==========
 if 'DATABASE_URL' in os.environ:
     import dj_database_url
     
     DEBUG = False
-    ALLOWED_HOSTS = ['.ondigitalocean.app', 'octopus-app-glkh4.ondigitalocean.app']
+    ALLOWED_HOSTS = [
+        '.ondigitalocean.app', 
+        'octopus-app-glkh4.ondigitalocean.app',
+        '*.ondigitalocean.app',  # جميع نطاقات DigitalOcean
+    ]
+    
+    # CSRF Trusted Origins - للسماح بالطلبات من الهواتف والمتصفحات
+    CSRF_TRUSTED_ORIGINS = [
+        'https://*.ondigitalocean.app',
+        'https://octopus-app-glkh4.ondigitalocean.app',
+    ]
     
     # Database
     DATABASES = {
@@ -406,13 +419,26 @@ if 'DATABASE_URL' in os.environ:
         )
     }
     
-    # Security
+    # Security Settings
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = 'DENY'
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    
+    # Session Settings - للتأكد من عمل الجلسات على الهواتف
+    SESSION_COOKIE_SAMESITE = 'Lax'  # يسمح بالطلبات من نفس الموقع
+    CSRF_COOKIE_SAMESITE = 'Lax'
+    SESSION_COOKIE_HTTPONLY = True
+    CSRF_COOKIE_HTTPONLY = False  # للسماح بـ JavaScript
+    
+    # Email في الإنتاج - تأكد من تفعيله
+    if EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
+        EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
     
     # Static files
     MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
