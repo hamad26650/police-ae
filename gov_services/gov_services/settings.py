@@ -465,25 +465,25 @@ if 'DATABASE_URL' in os.environ:
         )
     }
     
-    # Security Settings
-    SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False') == 'True'
-    SESSION_COOKIE_SECURE = SECURE_SSL_REDIRECT
-    CSRF_COOKIE_SECURE = SECURE_SSL_REDIRECT
-    SECURE_BROWSER_XSS_FILTER = True
-    SECURE_CONTENT_TYPE_NOSNIFF = True
-    X_FRAME_OPTIONS = 'DENY'
+    # Security Settings - إعدادات مرنة لتجنب Redirect Loop
+    # تعطيل SSL redirect لأن DigitalOcean يتعامل مع HTTPS
+    SECURE_SSL_REDIRECT = False  # DigitalOcean App Platform يتعامل مع SSL
     
-    # HSTS Settings (فقط إذا كان SSL مفعل)
-    if SECURE_SSL_REDIRECT:
-        SECURE_HSTS_SECONDS = 31536000  # 1 year
-        SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-        SECURE_HSTS_PRELOAD = True
+    # إضافة Proxy SSL Header لـ DigitalOcean
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     
-    # Session Settings
+    # Session/Cookie Settings - مرنة
+    SESSION_COOKIE_SECURE = False  # تعمل مع HTTP و HTTPS
+    CSRF_COOKIE_SECURE = False  # تعمل مع HTTP و HTTPS
     SESSION_COOKIE_SAMESITE = 'Lax'
     CSRF_COOKIE_SAMESITE = 'Lax'
     SESSION_COOKIE_HTTPONLY = True
     CSRF_COOKIE_HTTPONLY = False
+    
+    # XSS Protection
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = 'SAMEORIGIN'  # تغيير من DENY إلى SAMEORIGIN
     
     # Email في الإنتاج
     if EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
