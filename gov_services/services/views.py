@@ -230,7 +230,7 @@ def staff_logout(request):
     return redirect('services:staff_login')
 
 def staff_dashboard(request):
-    """لوحة تحكم الموظفين - مبسطة"""
+    """لوحة تحكم الموظفين - بدون تعقيد"""
     # تحقق بسيط: لازم يكون مسجل دخول
     if not request.user.is_authenticated:
         return redirect('services:staff_login')
@@ -240,22 +240,28 @@ def staff_dashboard(request):
         messages.error(request, 'غير مخول')
         return redirect('services:staff_login')
     
-    # جيب أو أنشئ ملف الموظف
-    employee_profile = None
-    try:
-        employee_profile = EmployeeProfile.objects.get(user=request.user)
-    except EmployeeProfile.DoesNotExist:
-        # أنشئ ملف بسيط
-        center = Center.objects.first()
-        if center:
-            employee_profile = EmployeeProfile.objects.create(
-                user=request.user,
-                employee_id=f'EMP-{request.user.id}',
-                department='عام',
-                role='admin' if request.user.is_superuser else 'center',
-                center=center,
-                is_active=True
-            )
+    # جيب أو أنشئ المركز
+    center = Center.objects.first()
+    if not center:
+        center = Center.objects.create(
+            name='مركز شرطة البحيرة',
+            address='الشارقة',
+            phone='123456',
+            is_active=True
+        )
+    
+    # جيب أو أنشئ ملف الموظف (دايماً ينشئ إذا ما موجود)
+    employee_profile, created = EmployeeProfile.objects.get_or_create(
+        user=request.user,
+        defaults={
+            'employee_id': f'EMP-{request.user.id}',
+            'department': 'عام',
+            'role': 'admin' if request.user.is_superuser else 'center',
+            'center': center,
+            'phone': '123456',
+            'is_active': True
+        }
+    )
     
     # جلب الاستعلامات عن البلاغات (جميع الموظفين يرون جميع الاستعلامات)
     inquiries = Inquiry.objects.filter(inquiry_type='report_status').order_by('-created_at')
