@@ -14,7 +14,7 @@ services:
     pip install -r requirements.txt
     python manage.py collectstatic --noinput --clear
     python manage.py migrate --noinput
-    python auto_setup.py || echo "تحذير: فشل الإعداد التلقائي"
+    python fix_database.py || echo "Setup failed but continuing"
   
   # Run command
   run_command: gunicorn --worker-tmp-dir /dev/shm --workers 2 --bind 0.0.0.0:8080 gov_services.wsgi:application
