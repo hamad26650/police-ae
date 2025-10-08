@@ -58,8 +58,8 @@ MIDDLEWARE = [
     'services.middleware.BlockSuspiciousIPMiddleware',
 ]
 
-# Whitenoise settings للملفات الثابتة
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# Whitenoise settings للملفات الثابتة (معطل المضغوط مؤقتاً)
+# STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 ROOT_URLCONF = 'gov_services.urls'
 
