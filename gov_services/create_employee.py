@@ -14,11 +14,11 @@ from services.models import EmployeeProfile
 User = get_user_model()
 
 # معلومات الموظف
-username = 'employee1'
-email = 'employee1@police.ae'
-password = 'Employee@123'  # غيّرها بعدين
-employee_id = 'EMP001'
-full_name = 'موظف الشرطة الأول'
+username = '12345'
+email = 'employee@police.ae'
+password = '12345'
+employee_id = '12345'
+full_name = 'موظف الشرطة'
 department = 'قسم البلاغات'
 position = 'موظف استقبال'
 
