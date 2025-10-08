@@ -183,23 +183,10 @@ def check_report_status(request):
 # ========== نظام الموظفين ==========
 
 def staff_login(request):
-    """صفحة تسجيل دخول الموظفين"""
-    # التحقق من المستخدم المسجل دخول
-    if request.user.is_authenticated:
-        # التحقق من الصلاحيات قبل التوجيه
-        if request.user.is_superuser or request.user.is_staff:
-            try:
-                # التحقق من وجود EmployeeProfile للموظفين
-                if not request.user.is_superuser:
-                    EmployeeProfile.objects.get(user=request.user)
-                return redirect('services:staff_dashboard')
-            except EmployeeProfile.DoesNotExist:
-                # تسجيل خروج إذا ما في ملف موظف
-                logout(request)
-                messages.error(request, 'هذا الحساب غير مخول للدخول إلى نظام الموظفين')
-        else:
-            logout(request)
-            messages.error(request, 'غير مخول للوصول')
+    """صفحة تسجيل دخول الموظفين - مبسطة"""
+    # إذا مسجل دخول، روح Dashboard مباشرة
+    if request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser):
+        return redirect('services:staff_dashboard')
     
     form = StaffLoginForm()
     
@@ -213,46 +200,14 @@ def staff_login(request):
             user = authenticate(request, username=username, password=password)
             
             if user is not None:
-                # التحقق من أن المستخدم موظف أو مدير
-                if user.is_superuser or user.is_staff:
-                    # إنشاء ملف شخصي إذا لم يكن موجوداً للمدراء
-                    if user.is_superuser:
-                        employee_profile, created = EmployeeProfile.objects.get_or_create(
-                            user=user,
-                            defaults={
-                                'role': 'admin',
-                                'department': 'الإدارة العامة',
-                                'center': Center.objects.first() if Center.objects.exists() else None
-                            }
-                        )
-                    # تسجيل الدخول
+                # التحقق البسيط: is_staff أو is_superuser
+                if user.is_staff or user.is_superuser:
+                    # تسجيل الدخول مباشرة
                     login(request, user)
-                    logger.info(f'تسجيل دخول ناجح: {username} من IP: {get_client_ip(request)}')
-                    
-                    # مسح بيانات النموذج من الـ session
                     messages.success(request, f'مرحباً {user.get_full_name() or user.username}!')
-                    
-                    # إعادة التوجيه إلى لوحة التحكم
-                    response = redirect('services:staff_dashboard')
-                    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-                    return response
+                    return redirect('services:staff_dashboard')
                 else:
-                    # التحقق من وجود ملف شخصي للموظفين العاديين
-                    try:
-                        employee_profile = EmployeeProfile.objects.get(user=user)
-                        login(request, user)
-                        logger.info(f'تسجيل دخول موظف: {username} من IP: {get_client_ip(request)}')
-                        
-                        # مسح بيانات النموذج من الـ session
-                        messages.success(request, f'مرحباً {user.get_full_name() or user.username}!')
-                        
-                        # إعادة التوجيه إلى لوحة التحكم
-                        response = redirect('services:staff_dashboard')
-                        response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-                        return response
-                    except EmployeeProfile.DoesNotExist:
-                        logger.warning(f'محاولة دخول غير مصرح بها: {username} من IP: {get_client_ip(request)}')
-                        messages.error(request, 'هذا الحساب غير مخول للدخول إلى نظام الموظفين')
+                    messages.error(request, 'غير مخول للوصول')
             else:
                 # اسم المستخدم أو كلمة المرور خاطئة
                 logger.warning(f'محاولة دخول فاشلة: {username} من IP: {get_client_ip(request)}')
@@ -274,33 +229,33 @@ def staff_logout(request):
     messages.success(request, 'تم تسجيل الخروج بنجاح')
     return redirect('services:staff_login')
 
-@login_required(login_url='services:staff_login')
 def staff_dashboard(request):
-    """لوحة تحكم الموظفين"""
-    # التحقق من الصلاحيات (is_authenticated محققة تلقائياً من @login_required)
-    if not (request.user.is_superuser or request.user.is_staff):
-        messages.error(request, 'غير مخول للوصول')
-        logout(request)  # تسجيل خروج وإعادة توجيه
+    """لوحة تحكم الموظفين - مبسطة"""
+    # تحقق بسيط: لازم يكون مسجل دخول
+    if not request.user.is_authenticated:
         return redirect('services:staff_login')
     
-    # رسالة الترحيب تم نقلها لصفحة تسجيل الدخول
-    # لتجنب تكرار الرسائل
+    # تحقق: لازم يكون staff أو admin
+    if not (request.user.is_staff or request.user.is_superuser):
+        messages.error(request, 'غير مخول')
+        return redirect('services:staff_login')
     
-    # محاولة الحصول على ملف الموظف أو إنشاؤه للمدراء
+    # جيب أو أنشئ ملف الموظف
+    employee_profile = None
     try:
         employee_profile = EmployeeProfile.objects.get(user=request.user)
     except EmployeeProfile.DoesNotExist:
-        if request.user.is_superuser:
-            # إنشاء ملف شخصي للمدير
+        # أنشئ ملف بسيط
+        center = Center.objects.first()
+        if center:
             employee_profile = EmployeeProfile.objects.create(
                 user=request.user,
-                department='الإدارة العامة',
-                role='admin',
-                center=Center.objects.first() if Center.objects.exists() else None
+                employee_id=f'EMP-{request.user.id}',
+                department='عام',
+                role='admin' if request.user.is_superuser else 'center',
+                center=center,
+                is_active=True
             )
-        else:
-            messages.error(request, 'غير مخول للوصول')
-            return redirect('services:staff_login')
     
     # جلب الاستعلامات عن البلاغات (جميع الموظفين يرون جميع الاستعلامات)
     inquiries = Inquiry.objects.filter(inquiry_type='report_status').order_by('-created_at')
