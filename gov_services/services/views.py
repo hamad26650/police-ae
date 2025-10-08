@@ -662,7 +662,7 @@ def reject_inquiry(request, inquiry_id):
 
 @login_required(login_url='services:staff_login')
 def respond_inquiry(request, inquiry_id):
-    """الرد على طلب"""
+    """الرد على طلب - مع إرسال إيميل"""
     if request.method == 'POST':
         try:
             inquiry = Inquiry.objects.get(id=inquiry_id, inquiry_type='report_status')
@@ -688,9 +688,40 @@ def respond_inquiry(request, inquiry_id):
             
             logger.info(f'تم الرد على طلب #{inquiry.id} بواسطة {request.user.username}')
             
+            # إرسال البريد الإلكتروني مباشرة
+            from django.conf import settings
+            
+            try:
+                # التحقق من الإعدادات
+                if settings.EMAIL_HOST_USER and settings.EMAIL_HOST_PASSWORD:
+                    # محاولة الإرسال مباشرة
+                    logger.info(f'📧 بدء إرسال بريد إلكتروني للاستعلام {inquiry.get_inquiry_id()}')
+                    
+                    # تعيين timeout
+                    import socket
+                    old_timeout = socket.getdefaulttimeout()
+                    socket.setdefaulttimeout(15)  # 15 ثانية
+                    
+                    try:
+                        email_result = email_service.send_inquiry_response(inquiry, response_text)
+                        
+                        if email_result['success']:
+                            logger.info(f'✅ نجح إرسال البريد للاستعلام {inquiry.get_inquiry_id()} إلى {inquiry.phone}')
+                        else:
+                            logger.warning(f'⚠️ فشل إرسال البريد: {email_result.get("message", "غير محدد")}')
+                    finally:
+                        # إعادة timeout
+                        socket.setdefaulttimeout(old_timeout)
+                else:
+                    logger.warning(f'⚠️ إعدادات البريد غير متوفرة للاستعلام {inquiry.get_inquiry_id()}')
+                    
+            except Exception as e:
+                error_type = type(e).__name__
+                logger.error(f'❌ خطأ في إرسال البريد للاستعلام {inquiry.get_inquiry_id()}: {error_type} - {str(e)[:200]}')
+            
             return JsonResponse({
                 'success': True,
-                'message': 'تم الرد على الطلب بنجاح'
+                'message': 'تم الرد على الطلب بنجاح وإرسال البريد الإلكتروني'
             })
             
         except Inquiry.DoesNotExist:
