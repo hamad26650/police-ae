@@ -65,9 +65,9 @@ MIDDLEWARE = [
     'services.middleware.BlockSuspiciousIPMiddleware',
 ]
 
-# Whitenoise settings - استخدام الإعداد البسيط للصور
+# Whitenoise settings - استخدام الإعداد البسيط بدون ضغط
+STATICFILES_STORAGE = 'whitenoise.storage.StaticFilesStorage'
 WHITENOISE_USE_FINDERS = True
-WHITENOISE_AUTOREFRESH = True
 
 ROOT_URLCONF = 'gov_services.urls'
 
