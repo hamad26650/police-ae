@@ -394,22 +394,38 @@ if not EMAIL_HOST_USER or not EMAIL_HOST_PASSWORD:
         EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
     # في الإنتاج: سيتم استخدام SMTP الحقيقي من متغيرات البيئة
 
-# ========== Production Settings (DigitalOcean) ==========
+# ========== Production Settings ==========
 if 'DATABASE_URL' in os.environ:
     import dj_database_url
     
     DEBUG = False
-    ALLOWED_HOSTS = [
-        '.ondigitalocean.app', 
-        'shark-app-kenq6.ondigitalocean.app',
-        '*.ondigitalocean.app',  # جميع نطاقات DigitalOcean
-    ]
     
-    # CSRF Trusted Origins - للسماح بالطلبات من الهواتف والمتصفحات
-    CSRF_TRUSTED_ORIGINS = [
-        'https://*.ondigitalocean.app',
-        'https://shark-app-kenq6.ondigitalocean.app',
-    ]
+    # Allowed Hosts - يدعم DigitalOcean و AWS Lightsail وأي دومين مخصص
+    allowed_hosts_env = os.environ.get('ALLOWED_HOSTS', '')
+    if allowed_hosts_env:
+        ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_env.split(',')]
+    else:
+        # Default hosts
+        ALLOWED_HOSTS = [
+            '.ondigitalocean.app',
+            '*.ondigitalocean.app',
+            '.amazonaws.com',
+            '*.lightsail.aws.amazon.com',
+            'localhost',
+            '127.0.0.1',
+        ]
+    
+    # CSRF Trusted Origins
+    csrf_origins_env = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
+    if csrf_origins_env:
+        CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_origins_env.split(',')]
+    else:
+        # Default origins
+        CSRF_TRUSTED_ORIGINS = [
+            'https://*.ondigitalocean.app',
+            'https://*.amazonaws.com',
+            'https://*.lightsail.aws.amazon.com',
+        ]
     
     # Database
     DATABASES = {
@@ -420,27 +436,31 @@ if 'DATABASE_URL' in os.environ:
     }
     
     # Security Settings
-    SECURE_SSL_REDIRECT = True
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False') == 'True'
+    SESSION_COOKIE_SECURE = SECURE_SSL_REDIRECT
+    CSRF_COOKIE_SECURE = SECURE_SSL_REDIRECT
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = 'DENY'
-    SECURE_HSTS_SECONDS = 31536000  # 1 year
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
     
-    # Session Settings - للتأكد من عمل الجلسات على الهواتف
-    SESSION_COOKIE_SAMESITE = 'Lax'  # يسمح بالطلبات من نفس الموقع
+    # HSTS Settings (فقط إذا كان SSL مفعل)
+    if SECURE_SSL_REDIRECT:
+        SECURE_HSTS_SECONDS = 31536000  # 1 year
+        SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+        SECURE_HSTS_PRELOAD = True
+    
+    # Session Settings
+    SESSION_COOKIE_SAMESITE = 'Lax'
     CSRF_COOKIE_SAMESITE = 'Lax'
     SESSION_COOKIE_HTTPONLY = True
-    CSRF_COOKIE_HTTPONLY = False  # للسماح بـ JavaScript
+    CSRF_COOKIE_HTTPONLY = False
     
-    # Email في الإنتاج - تأكد من تفعيله
+    # Email في الإنتاج
     if EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
         EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
     
-    # Static files
-    MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
+    # Static files (Whitenoise)
+    if 'whitenoise.middleware.WhiteNoiseMiddleware' not in MIDDLEWARE:
+        MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
     STATIC_ROOT = BASE_DIR / 'staticfiles'
