@@ -28,8 +28,7 @@ try:
     print("\n📍 إنشاء المركز...")
     center = Center.objects.create(
         name='مركز شرطة البحيرة',
-        address='الشارقة - الإمارات',
-        phone='+971-6-123-4567',
+        location='الشارقة - الإمارات',
         is_active=True
     )
     print(f"✅ المركز: {center.name}")

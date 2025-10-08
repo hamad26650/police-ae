@@ -246,8 +246,7 @@ def staff_dashboard(request):
         if not center:
             center = Center.objects.create(
                 name='مركز شرطة البحيرة',
-                address='الشارقة',
-                phone='123456',
+                location='الشارقة',
                 is_active=True
             )
         
