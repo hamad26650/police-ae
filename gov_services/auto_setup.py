@@ -82,14 +82,13 @@ def setup_all():
         employee_profile = EmployeeProfile.objects.create(
             user=employee_user,
             employee_id='EMP-12345',
-            full_name='موظف الشرطة',
-            department='قسم البلاغات',
-            position='موظف استقبال',
+            department='قسم البلاغات والاستعلامات',
+            phone='+971-50-123-4567',
             center=center,
             is_active=True,
-            role='staff'
+            role='center'  # دور الموظف: center (موظف مركز)
         )
-        print(f"   ✅ تم إنشاء ملف الموظف: {employee_profile.full_name}")
+        print(f"   ✅ تم إنشاء ملف الموظف: {employee_user.get_full_name()}")
         
         # 4. عرض الملخص
         print("\n" + "="*70)
