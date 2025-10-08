@@ -230,8 +230,8 @@ def staff_logout(request):
     return redirect('services:staff_login')
 
 def staff_dashboard(request):
-    """لوحة تحكم الموظفين - بدون تعقيد"""
-    # تحقق بسيط: لازم يكون مسجل دخول
+    """لوحة تحكم الموظفين - آمن ومحمي من الأخطاء"""
+    # تحقق: لازم يكون مسجل دخول
     if not request.user.is_authenticated:
         return redirect('services:staff_login')
     
@@ -240,28 +240,33 @@ def staff_dashboard(request):
         messages.error(request, 'غير مخول')
         return redirect('services:staff_login')
     
-    # جيب أو أنشئ المركز
-    center = Center.objects.first()
-    if not center:
-        center = Center.objects.create(
-            name='مركز شرطة البحيرة',
-            address='الشارقة',
-            phone='123456',
-            is_active=True
+    try:
+        # جيب أو أنشئ المركز بشكل آمن
+        center = Center.objects.first()
+        if not center:
+            center = Center.objects.create(
+                name='مركز شرطة البحيرة',
+                address='الشارقة',
+                phone='123456',
+                is_active=True
+            )
+        
+        # جيب أو أنشئ ملف الموظف بشكل آمن
+        employee_profile, created = EmployeeProfile.objects.get_or_create(
+            user=request.user,
+            defaults={
+                'employee_id': f'EMP-{request.user.id}',
+                'department': 'قسم عام',
+                'role': 'admin' if request.user.is_superuser else 'center',
+                'center': center,
+                'phone': '123456',
+                'is_active': True
+            }
         )
-    
-    # جيب أو أنشئ ملف الموظف (دايماً ينشئ إذا ما موجود)
-    employee_profile, created = EmployeeProfile.objects.get_or_create(
-        user=request.user,
-        defaults={
-            'employee_id': f'EMP-{request.user.id}',
-            'department': 'عام',
-            'role': 'admin' if request.user.is_superuser else 'center',
-            'center': center,
-            'phone': '123456',
-            'is_active': True
-        }
-    )
+    except Exception as e:
+        # لو صار أي خطأ، اعرض رسالة واضحة
+        messages.error(request, f'حدث خطأ: {str(e)}')
+        return redirect('services:staff_login')
     
     # جلب الاستعلامات عن البلاغات (جميع الموظفين يرون جميع الاستعلامات)
     inquiries = Inquiry.objects.filter(inquiry_type='report_status').order_by('-created_at')
