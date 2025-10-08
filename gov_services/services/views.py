@@ -184,8 +184,22 @@ def check_report_status(request):
 
 def staff_login(request):
     """صفحة تسجيل دخول الموظفين"""
+    # التحقق من المستخدم المسجل دخول
     if request.user.is_authenticated:
-        return redirect('services:staff_dashboard')
+        # التحقق من الصلاحيات قبل التوجيه
+        if request.user.is_superuser or request.user.is_staff:
+            try:
+                # التحقق من وجود EmployeeProfile للموظفين
+                if not request.user.is_superuser:
+                    EmployeeProfile.objects.get(user=request.user)
+                return redirect('services:staff_dashboard')
+            except EmployeeProfile.DoesNotExist:
+                # تسجيل خروج إذا ما في ملف موظف
+                logout(request)
+                messages.error(request, 'هذا الحساب غير مخول للدخول إلى نظام الموظفين')
+        else:
+            logout(request)
+            messages.error(request, 'غير مخول للوصول')
     
     form = StaffLoginForm()
     
@@ -263,13 +277,10 @@ def staff_logout(request):
 @login_required(login_url='services:staff_login')
 def staff_dashboard(request):
     """لوحة تحكم الموظفين"""
-    # التأكد من أن المستخدم مسجل دخول
-    if not request.user.is_authenticated:
-        return redirect('services:staff_login')
-    
-    # التحقق من الصلاحيات
+    # التحقق من الصلاحيات (is_authenticated محققة تلقائياً من @login_required)
     if not (request.user.is_superuser or request.user.is_staff):
         messages.error(request, 'غير مخول للوصول')
+        logout(request)  # تسجيل خروج وإعادة توجيه
         return redirect('services:staff_login')
     
     # رسالة الترحيب تم نقلها لصفحة تسجيل الدخول
