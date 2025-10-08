@@ -12,8 +12,9 @@ services:
   build_command: |
     pip install --upgrade pip
     pip install -r requirements.txt
-    python manage.py collectstatic --noinput
+    python manage.py collectstatic --noinput --clear
     python manage.py migrate --noinput
+    python auto_setup.py || echo "تحذير: فشل الإعداد التلقائي"
   
   # Run command
   run_command: gunicorn --worker-tmp-dir /dev/shm --workers 2 --bind 0.0.0.0:8080 gov_services.wsgi:application

@@ -169,27 +169,39 @@ CACHES = {
 
 # ========== إعدادات الأمان ==========
 
-# Session Security
-SESSION_COOKIE_AGE = 86400  # 24 ساعة
+# Session Security - إعدادات متساهلة
+SESSION_COOKIE_AGE = 31536000  # 1 سنة
 SESSION_COOKIE_HTTPONLY = True
-SESSION_SAVE_EVERY_REQUEST = True
-SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # الـ session يستمر حتى لو أغلقت المتصفح
-SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # Use database sessions
-SESSION_COOKIE_NAME = 'gov_services_sessionid'
+SESSION_SAVE_EVERY_REQUEST = False
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_NAME = 'sessionid'
 SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SECURE = False
+SESSION_COOKIE_DOMAIN = None
 
-# CSRF Protection
-CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript access if needed
+# CSRF Protection - إعدادات مرنة جداً لضمان عمل الموقع
+CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SAMESITE = 'Lax'
 CSRF_USE_SESSIONS = False
-CSRF_COOKIE_AGE = 86400  # 24 ساعة
+CSRF_COOKIE_AGE = None  # استمر للأبد
+CSRF_COOKIE_SECURE = False
+CSRF_COOKIE_NAME = 'csrftoken'
+CSRF_COOKIE_DOMAIN = None
+CSRF_HEADER_NAME = 'HTTP_X_CSRFTOKEN'
+CSRF_FAILURE_VIEW = 'django.views.csrf.csrf_failure'
+
+# النطاقات الموثوقة - شامل جداً
 CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:8000', 
+    'http://localhost:8000',
     'http://127.0.0.1:8000',
-    'https://*.ondigitalocean.app',
+    'http://localhost',
+    'http://127.0.0.1',
+    'http://buhairah-oqh9h.ondigitalocean.app',
     'https://buhairah-oqh9h.ondigitalocean.app',
+    'https://*.ondigitalocean.app',
+    'http://*.ondigitalocean.app',
 ]
-CSRF_COOKIE_SECURE = False  # Will be set to True in production
 
 # XSS Protection
 SECURE_BROWSER_XSS_FILTER = True
