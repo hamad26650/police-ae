@@ -204,17 +204,28 @@ class EmailService:
 info@police.ae | +971-6-123-4567
 """
             
+            # تحديد البريد الإلكتروني الصحيح
+            recipient_email = inquiry.email if inquiry.email else inquiry.phone
+            
+            # التحقق من صحة البريد الإلكتروني
+            if not recipient_email or '@' not in recipient_email:
+                logger.error(f'البريد الإلكتروني غير صحيح للاستعلام {inquiry.get_inquiry_id()}: {recipient_email}')
+                return {
+                    'success': False,
+                    'message': 'البريد الإلكتروني غير صحيح. لم يتم إرسال الرسالة.'
+                }
+            
             # إرسال الرسالة
             send_mail(
                 subject=subject,
                 message=plain_message,
                 from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[inquiry.phone],  # حقل phone يحتوي على الإيميل
+                recipient_list=[recipient_email],
                 html_message=html_message,
                 fail_silently=False,
             )
             
-            logger.info(f'تم إرسال بريد إلكتروني للاستعلام {inquiry.get_inquiry_id()} إلى {inquiry.phone}')
+            logger.info(f'✅ تم إرسال بريد إلكتروني للاستعلام {inquiry.get_inquiry_id()} إلى {recipient_email}')
             
             return {
                 'success': True,
@@ -306,16 +317,23 @@ info@police.ae | +971-6-123-4567
 شرطة الشارقة
             """
             
+            # تحديد البريد الإلكتروني الصحيح
+            recipient_email = inquiry.email if inquiry.email else inquiry.phone
+            
+            if not recipient_email or '@' not in recipient_email:
+                logger.warning(f'البريد الإلكتروني غير صحيح للاستعلام {inquiry.get_inquiry_id()}')
+                return {'success': False, 'message': 'البريد الإلكتروني غير صحيح'}
+            
             send_mail(
                 subject=subject,
                 message=plain_message,
                 from_email=settings.EMAIL_HOST_USER,
-                recipient_list=[inquiry.phone],  # email stored in phone field
+                recipient_list=[recipient_email],
                 html_message=html_message,
                 fail_silently=False
             )
             
-            logger.info(f'تم إرسال إيميل تأكيد للاستعلام {inquiry.get_inquiry_id()}')
+            logger.info(f'✅ تم إرسال إيميل تأكيد للاستعلام {inquiry.get_inquiry_id()} إلى {recipient_email}')
             return {'success': True, 'message': 'تم إرسال الإيميل بنجاح'}
             
         except Exception as e:
