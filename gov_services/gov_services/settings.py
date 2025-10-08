@@ -27,8 +27,15 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'oai(by$3xw6h+!58r6*%9whw!*d+xu
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
-# للتطوير المحلي
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '192.168.50.149', '*']
+# للتطوير المحلي والإنتاج
+ALLOWED_HOSTS = [
+    'localhost', 
+    '127.0.0.1', 
+    '192.168.50.149',
+    '.ondigitalocean.app',
+    'buhairah-oqh9h.ondigitalocean.app',
+    '*'
+]
 
 
 # Application definition
@@ -176,7 +183,12 @@ CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript access if needed
 CSRF_COOKIE_SAMESITE = 'Lax'
 CSRF_USE_SESSIONS = False
 CSRF_COOKIE_AGE = 86400  # 24 ساعة
-CSRF_TRUSTED_ORIGINS = ['http://localhost:8000', 'http://127.0.0.1:8000']
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8000', 
+    'http://127.0.0.1:8000',
+    'https://*.ondigitalocean.app',
+    'https://buhairah-oqh9h.ondigitalocean.app',
+]
 CSRF_COOKIE_SECURE = False  # Will be set to True in production
 
 # XSS Protection
