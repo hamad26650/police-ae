@@ -1,4 +1,17 @@
 from django.contrib import admin
+from django.contrib.admin import AdminSite
+
+# تخصيص عنوان لوحة الإدارة
+admin.site.site_header = "🚓 إدارة نظام شرطة الشارقة"
+admin.site.site_title = "لوحة التحكم | شرطة الشارقة"
+admin.site.index_title = "مرحباً في لوحة التحكم الرئيسية"
+
+# إضافة CSS مخصص
+class CustomAdminSite(AdminSite):
+    class Media:
+        css = {
+            'all': ('services/admin/css/custom_admin.css',)
+        }
 from .models import Service, ServiceRequest, Inquiry, SiteSettings, Center, EmployeeProfile, SMSMessage, AuditLog
 
 @admin.register(Service)
