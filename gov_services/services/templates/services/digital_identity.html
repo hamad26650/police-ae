@@ -1187,7 +1187,7 @@
             <button class="video-modal-close" onclick="closeVideoModal()">
                 <i class="fas fa-times"></i>
             </button>
-            <iframe id="videoFrame" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            <iframe id="videoFrame" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen frameborder="0"></iframe>
         </div>
     </div>
 
@@ -1276,15 +1276,25 @@
         function openVideoModal(videoId) {
             const modal = document.getElementById('videoModal');
             const iframe = document.getElementById('videoFrame');
-            iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
+            
+            // Set iframe source with better parameters
+            iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&fs=1&enablejsapi=1&origin=${window.location.origin}`;
+            
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
+            
+            // Log for debugging
+            console.log('Opening video:', videoId);
+            console.log('Video URL:', iframe.src);
         }
 
         function closeVideoModal() {
             const modal = document.getElementById('videoModal');
             const iframe = document.getElementById('videoFrame');
+            
+            // Stop video by clearing source
             iframe.src = '';
+            
             modal.classList.remove('active');
             document.body.style.overflow = 'auto';
         }
