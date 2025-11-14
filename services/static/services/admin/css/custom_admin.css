@@ -1,0 +1,290 @@
+/* تصميم مخصص للوحة الإدارة - شرطة الشارقة */
+
+/* ========== ألوان شرطة الشارقة ========== */
+:root {
+    --primary-color: #1a5490;      /* أزرق الشرطة */
+    --secondary-color: #c8102e;    /* أحمر الإمارات */
+    --accent-color: #00732f;       /* أخضر الإمارات */
+    --dark-bg: #0d3a5f;           /* خلفية داكنة */
+    --light-gray: #f5f5f5;
+    --border-color: #ddd;
+}
+
+/* ========== Header (الشريط العلوي) ========== */
+#header {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--dark-bg) 100%);
+    color: white !important;
+    padding: 15px 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+#branding h1,
+#branding h1 a:link,
+#branding h1 a:visited {
+    color: white !important;
+    font-weight: bold;
+    font-size: 26px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+#branding h1::before {
+    content: "🚓 ";
+    font-size: 30px;
+    margin-right: 10px;
+}
+
+/* ========== شريط التنقل ========== */
+.module h2,
+.module caption,
+.inline-group h2 {
+    background: var(--primary-color) !important;
+    color: white !important;
+    padding: 12px 15px;
+    border-radius: 8px 8px 0 0;
+    font-weight: bold;
+}
+
+/* ========== الأزرار ========== */
+.button,
+input[type=submit],
+input[type=button],
+.submit-row input,
+a.button {
+    background: linear-gradient(135deg, var(--primary-color) 0%, #2a6bb0 100%) !important;
+    color: white !important;
+    border: none !important;
+    padding: 10px 20px !important;
+    border-radius: 6px !important;
+    font-weight: bold !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.button:hover,
+input[type=submit]:hover,
+input[type=button]:hover,
+.submit-row input:hover {
+    background: linear-gradient(135deg, #2a6bb0 0%, var(--primary-color) 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+/* زر الحذف بلون أحمر */
+.deletelink,
+.deletelink-box a {
+    background: linear-gradient(135deg, #c8102e 0%, #a00d24 100%) !important;
+}
+
+.deletelink:hover {
+    background: linear-gradient(135deg, #a00d24 0%, #c8102e 100%) !important;
+}
+
+/* ========== الجداول ========== */
+#changelist table,
+#result_list {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+#changelist thead th {
+    background: var(--primary-color) !important;
+    color: white !important;
+    font-weight: bold;
+    padding: 12px;
+}
+
+#changelist tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+#changelist tbody tr:hover {
+    background-color: #e8f4f8 !important;
+    transition: background-color 0.2s ease;
+}
+
+/* ========== Sidebar ========== */
+#content-related {
+    background: var(--light-gray);
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.module {
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* ========== الرسائل (Alerts) ========== */
+.messagelist {
+    margin: 0;
+    padding: 0;
+}
+
+.messagelist li {
+    border-radius: 6px;
+    padding: 15px;
+    margin: 10px 0;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.messagelist .success {
+    background: linear-gradient(135deg, #00732f 0%, #00a843 100%);
+    color: white;
+}
+
+.messagelist .warning {
+    background: linear-gradient(135deg, #f39c12 0%, #f1c40f 100%);
+    color: white;
+}
+
+.messagelist .error {
+    background: linear-gradient(135deg, #c8102e 0%, #e74c3c 100%);
+    color: white;
+}
+
+/* ========== البطاقات (Cards) ========== */
+.dashboard-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 15px 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+/* ========== الأيقونات ========== */
+.addlink::before {
+    content: "➕ ";
+    font-size: 16px;
+}
+
+.changelink::before {
+    content: "✏️ ";
+    font-size: 16px;
+}
+
+.deletelink::before {
+    content: "🗑️ ";
+    font-size: 16px;
+}
+
+/* ========== Footer ========== */
+#footer {
+    background: var(--dark-bg);
+    color: white;
+    padding: 20px;
+    text-align: center;
+    border-radius: 8px;
+    margin-top: 30px;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+}
+
+/* ========== تحسينات عامة ========== */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+#container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    padding: 20px;
+    margin: 20px auto;
+}
+
+/* ========== Breadcrumbs ========== */
+.breadcrumbs {
+    background: var(--light-gray);
+    padding: 12px 20px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+}
+
+.breadcrumbs a {
+    color: var(--primary-color);
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.breadcrumbs a:hover {
+    text-decoration: underline;
+}
+
+/* ========== Forms ========== */
+.form-row {
+    border-bottom: 1px solid var(--border-color);
+    padding: 15px 10px;
+}
+
+.form-row:last-child {
+    border-bottom: none;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="number"],
+textarea,
+select {
+    border: 2px solid var(--border-color) !important;
+    border-radius: 6px !important;
+    padding: 10px !important;
+    transition: border-color 0.3s ease !important;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus,
+input[type="number"]:focus,
+textarea:focus,
+select:focus {
+    border-color: var(--primary-color) !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(26, 84, 144, 0.1) !important;
+}
+
+/* ========== شاشات الجوال ========== */
+@media (max-width: 768px) {
+    #branding h1 {
+        font-size: 20px;
+    }
+    
+    .button {
+        padding: 8px 15px !important;
+        font-size: 14px !important;
+    }
+    
+    #container {
+        margin: 10px;
+        padding: 15px;
+    }
+}
+
+/* ========== رسوم متحركة ========== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.module,
+.dashboard-card {
+    animation: fadeIn 0.5s ease;
+}
+

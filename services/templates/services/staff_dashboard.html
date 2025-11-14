@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم الموظفين</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f5f7fa;
+            --card: #fff;
+            --text: #1a202c;
+            --text-light: #718096;
+            --border: #e2e8f0;
+            --primary: #3b82f6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        [data-theme="dark"] {
+            --bg: #1a202c;
+            --card: #2d3748;
+            --text: #f7fafc;
+            --text-light: #cbd5e1;
+            --border: #4a5568;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+
+        /* Header */
+        .header {
+            background: var(--card);
+            padding: 1rem 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left { display: flex; align-items: center; gap: 1rem; }
+        .logo { width: 45px; height: 45px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.3rem; }
+        .header-title h1 { font-size: 1.1rem; font-weight: 700; color: var(--text); }
+        .header-title p { font-size: 0.85rem; color: var(--text-light); }
+
+        .header-right { display: flex; align-items: center; gap: 0.8rem; }
+        .user-info { display: flex; align-items: center; gap: 0.8rem; padding: 0.6rem 1rem; background: var(--bg); border-radius: 8px; }
+        .avatar { width: 35px; height: 35px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; }
+        .user-name { font-size: 0.9rem; font-weight: 600; }
+
+        .btn { padding: 0.6rem 1rem; border: none; border-radius: 8px; cursor: pointer; font-family: 'Cairo'; font-weight: 600; font-size: 0.9rem; transition: all 0.2s; }
+        .btn-icon { width: 40px; height: 40px; padding: 0; display: flex; align-items: center; justify-content: center; }
+        .btn-theme { background: var(--bg); color: var(--text); }
+        .btn-logout { background: var(--danger); color: white; }
+        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        /* Container */
+        .container { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+
+        /* Stats */
+        .stats-section { background: var(--card); padding: 0.8rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 1.2rem; }
+        .stats-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
+        .stats-header:hover { opacity: 0.8; }
+        .stats-title { font-size: 0.9rem; font-weight: 700; color: var(--text); }
+        .stats-toggle { width: 28px; height: 28px; background: var(--bg); border-radius: 6px; display: flex; align-items: center; justify-content: center; transition: transform 0.3s; font-size: 0.8rem; }
+        .stats-toggle.active { transform: rotate(180deg); }
+        .stats-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+        .stats-content.active { max-height: 500px; margin-top: 0.8rem; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.6rem; }
+        .stat { background: var(--bg); padding: 0.8rem; border-radius: 8px; }
+        .stat-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem; }
+        .stat-title { font-size: 0.75rem; color: var(--text-light); font-weight: 600; }
+        .stat-icon { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.95rem; }
+        .stat-value { font-size: 1.4rem; font-weight: 700; color: var(--text); }
+        .stat.total .stat-icon { background: var(--primary); }
+        .stat.pending .stat-icon { background: var(--warning); }
+        .stat.resolved .stat-icon { background: var(--success); }
+        .stat.rejected .stat-icon { background: var(--danger); }
+
+        /* Search */
+        .search-box { background: var(--card); padding: 0.8rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 1.2rem; }
+        .search-form { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .search-input { flex: 1; min-width: 200px; padding: 0.6rem; border: 2px solid var(--border); border-radius: 6px; font-family: 'Cairo'; background: var(--bg); color: var(--text); font-size: 0.85rem; }
+        .search-input:focus { outline: none; border-color: var(--primary); }
+        .btn-search { background: var(--primary); color: white; }
+        .btn-clear { background: var(--bg); color: var(--text); border: 2px solid var(--border); }
+
+        /* Table */
+        .table-box { background: var(--card); padding: 0.8rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap; gap: 0.6rem; }
+        .table-title { font-size: 0.9rem; font-weight: 700; }
+        .tabs { display: flex; gap: 0.3rem; background: var(--bg); padding: 0.2rem; border-radius: 6px; }
+        .tab { padding: 0.45rem 0.7rem; border: none; background: transparent; color: var(--text-light); cursor: pointer; border-radius: 5px; font-family: 'Cairo'; font-weight: 600; font-size: 0.8rem; }
+        .tab.active { background: var(--primary); color: white; }
+
+        table { width: 100%; border-collapse: collapse; }
+        th { padding: 0.7rem; text-align: right; font-size: 0.75rem; color: var(--text-light); font-weight: 600; background: var(--bg); }
+        td { padding: 0.7rem; border-top: 1px solid var(--border); font-size: 0.8rem; }
+        .badge { padding: 0.3rem 0.6rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem; }
+        .badge.resolved { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .badge.pending { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        .badge.rejected { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+        .btn-view { background: var(--primary); color: white; padding: 0.4rem 0.8rem; font-size: 0.75rem; }
+
+        /* Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; }
+        .modal-content { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--card); border-radius: 10px; width: 90%; max-width: 480px; max-height: 90vh; overflow-y: auto; }
+        .modal-header { padding: 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .modal-title { font-size: 1rem; font-weight: 700; }
+        .modal-body { padding: 1.2rem; }
+        .info-item { margin-bottom: 0.8rem; padding: 0.7rem; background: var(--bg); border-radius: 8px; }
+        .info-label { font-size: 0.75rem; color: var(--text-light); font-weight: 600; margin-bottom: 0.25rem; }
+        .info-value { font-size: 0.9rem; font-weight: 600; }
+        .modal-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.8rem; }
+        .btn-action { flex: 1; min-width: 110px; padding: 0.7rem; font-size: 0.85rem; }
+        .btn-reserve { background: var(--primary); color: white; }
+        .btn-unreserve { background: var(--warning); color: white; }
+        .btn-reject { background: var(--danger); color: white; }
+        .btn-respond { background: var(--success); color: white; }
+        .btn-close { width: 28px; height: 28px; border: none; background: var(--bg); border-radius: 6px; cursor: pointer; color: var(--text); font-size: 0.85rem; }
+
+        textarea { width: 100%; padding: 0.7rem; border: 2px solid var(--border); border-radius: 8px; font-family: 'Cairo'; background: var(--bg); color: var(--text); resize: none; font-size: 0.9rem; }
+        textarea:focus { outline: none; border-color: var(--primary); }
+
+        .alert { padding: 0.8rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.9rem; }
+        .alert-success { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid var(--success); }
+        .alert-error { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); }
+
+        /* Hamburger Menu */
+        .hamburger { display: none; width: 35px; height: 35px; background: var(--bg); border: none; border-radius: 6px; cursor: pointer; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+        .hamburger span { width: 18px; height: 2px; background: var(--text); transition: 0.3s; }
+        .mobile-menu { display: none; position: fixed; top: 0; right: -100%; width: 240px; height: 100vh; background: var(--card); box-shadow: -2px 0 10px rgba(0,0,0,0.1); z-index: 1001; transition: right 0.3s; padding: 1.5rem 1rem; }
+        .mobile-menu.active { right: 0; }
+        .mobile-menu-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; }
+        .mobile-menu-overlay.active { display: block; }
+        .mobile-menu-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 0.8rem; border-bottom: 2px solid var(--border); }
+        .mobile-menu-title { font-size: 0.95rem; font-weight: 700; }
+        .mobile-menu-close { width: 30px; height: 30px; background: var(--bg); border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
+        .mobile-menu-item { padding: 0.8rem; margin-bottom: 0.6rem; background: var(--bg); border-radius: 8px; display: flex; align-items: center; gap: 0.8rem; cursor: pointer; transition: 0.2s; border: 2px solid transparent; }
+        .mobile-menu-item:hover { border-color: var(--primary); }
+        .mobile-menu-item i { font-size: 1rem; width: 25px; }
+        .mobile-menu-item span { font-weight: 600; font-size: 0.9rem; }
+        .mobile-menu-item.theme { color: var(--text); }
+        .mobile-menu-item.logout { color: var(--danger); }
+        .mobile-menu-item.logout form { margin: 0; width: 100%; }
+        .mobile-menu-item.logout button { background: none; border: none; color: var(--danger); font-family: 'Cairo'; font-weight: 600; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 0.8rem; width: 100%; padding: 0; }
+
+        /* Hide phone column on mobile */
+        .phone-column { display: table-cell; }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .header { padding: 1rem; }
+            .header-right { display: none; }
+            .hamburger { display: flex; }
+            .mobile-menu { display: block; }
+            
+            .stats { grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
+            .stat { padding: 0.7rem; }
+            .stat-value { font-size: 1.3rem; }
+            .stat-icon { width: 30px; height: 30px; font-size: 0.9rem; }
+            
+            .search-box { padding: 0.7rem; }
+            .search-form { flex-direction: column; }
+            .search-input { min-width: 100%; font-size: 0.8rem; }
+            .btn { width: 100%; font-size: 0.8rem; padding: 0.6rem; }
+            
+            .table-box { padding: 0.7rem; overflow-x: auto; }
+            .table-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+            .tabs { width: 100%; overflow-x: auto; white-space: nowrap; }
+            .tab { font-size: 0.75rem; padding: 0.4rem 0.6rem; }
+            
+            /* Hide phone column on mobile */
+            .phone-column { display: none; }
+            
+            table { font-size: 0.75rem; width: 100%; }
+            th, td { padding: 0.5rem 0.3rem; font-size: 0.7rem; }
+            .badge { font-size: 0.7rem; padding: 0.25rem 0.5rem; }
+            .btn-view { padding: 0.35rem 0.6rem; font-size: 0.7rem; }
+            
+            .modal-content { width: 95%; max-width: 95%; }
+            .modal-body { padding: 1rem; }
+            .info-item { padding: 0.6rem; }
+            .modal-actions { flex-direction: column; }
+            .btn-action { width: 100%; min-width: 100%; }
+        }
+
+        @media (max-width: 480px) {
+            .header-title h1 { font-size: 0.85rem; }
+            .stats { grid-template-columns: 1fr; }
+            .stat-value { font-size: 1.5rem; }
+            th, td { padding: 0.4rem 0.2rem; font-size: 0.65rem; }
+            .badge { font-size: 0.65rem; }
+            .btn-view { padding: 0.3rem 0.5rem; font-size: 0.65rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+            <div class="header-left">
+            <div class="logo"><i class="fas fa-shield-alt"></i></div>
+            <div class="header-title">
+                <h1>مرحباً، {{ request.user.get_full_name|default:request.user.username }}</h1>
+                <p>لوحة التحكم</p>
+                    </div>
+                    </div>
+        <div class="header-right">
+            <div class="user-info">
+                <div class="avatar"><i class="fas fa-user"></i></div>
+                <span class="user-name">{{ request.user.username }}</span>
+                </div>
+            <button class="btn btn-icon btn-theme" onclick="toggleTheme()">
+                <i class="fas fa-moon" id="themeIcon"></i>
+            </button>
+            <form method="post" action="{% url 'services:staff_logout' %}" style="margin: 0;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-icon btn-logout" title="تسجيل الخروج">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </form>
+            </div>
+        <!-- Hamburger Button (Mobile Only) -->
+        <button class="hamburger" onclick="toggleMobileMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+                </button>
+    </header>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay" onclick="toggleMobileMenu()"></div>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu-header">
+            <span class="mobile-menu-title">القائمة</span>
+            <button class="mobile-menu-close" onclick="toggleMobileMenu()">
+                <i class="fas fa-times"></i>
+            </button>
+                    </div>
+        
+        <!-- User Account Type -->
+        <div class="mobile-menu-item">
+            <i class="fas fa-user-shield"></i>
+            <span>{{ request.user.get_full_name|default:request.user.username }}</span>
+                    </div>
+
+        <!-- Theme Toggle -->
+        <div class="mobile-menu-item theme" onclick="toggleTheme()">
+            <i class="fas fa-moon" id="themeIconMobile"></i>
+            <span>تغيير الوضع</span>
+                </div>
+
+        <!-- Logout -->
+        <div class="mobile-menu-item logout">
+            <form method="post" action="{% url 'services:staff_logout' %}">
+                {% csrf_token %}
+                <button type="submit">
+                        <i class="fas fa-sign-out-alt"></i>
+                    <span>تسجيل الخروج</span>
+                    </button>
+            </form>
+            </div>
+        </div>
+
+    <div class="container">
+        <!-- Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Stats -->
+        <div class="stats-section">
+            <div class="stats-header" onclick="toggleStats()">
+                <h2 class="stats-title"><i class="fas fa-chart-bar"></i> الإحصائيات</h2>
+                <div class="stats-toggle" id="statsToggle">
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+            <div class="stats-content" id="statsContent">
+                <div class="stats">
+                    <div class="stat total">
+                        <div class="stat-header">
+                            <span class="stat-title">إجمالي الاستعلامات</span>
+                            <div class="stat-icon"><i class="fas fa-clipboard-list"></i></div>
+                        </div>
+                        <div class="stat-value">{{ total_inquiries }}</div>
+                    </div>
+                    <div class="stat pending">
+                        <div class="stat-header">
+                            <span class="stat-title">قيد الانتظار</span>
+                            <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                        </div>
+                        <div class="stat-value">{{ pending_inquiries }}</div>
+                    </div>
+                    <div class="stat resolved">
+                        <div class="stat-header">
+                            <span class="stat-title">تم الرد</span>
+                            <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                        </div>
+                        <div class="stat-value">{{ resolved_inquiries }}</div>
+                    </div>
+                    <div class="stat rejected">
+                        <div class="stat-header">
+                            <span class="stat-title">مرفوض</span>
+                            <div class="stat-icon"><i class="fas fa-times-circle"></i></div>
+                        </div>
+                        <div class="stat-value">{{ rejected_inquiries }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search -->
+        <div class="search-box">
+            <form method="get" class="search-form">
+                <input type="text" name="search" class="search-input" placeholder="ابحث برقم المرجع..." value="{{ request.GET.search }}">
+                <button type="submit" class="btn btn-search"><i class="fas fa-search"></i> بحث</button>
+                {% if request.GET.search %}
+                <a href="{% url 'services:staff_dashboard' %}" class="btn btn-clear"><i class="fas fa-times"></i> مسح</a>
+                {% endif %}
+            </form>
+        </div>
+
+        <!-- Table -->
+        <div class="table-box">
+            <div class="table-header">
+                <h2 class="table-title">الاستعلامات</h2>
+                <div class="tabs">
+                    <button class="tab {% if not request.GET.status %}active{% endif %}" onclick="window.location.href='{% url 'services:staff_dashboard' %}'">الكل</button>
+                    <button class="tab {% if request.GET.status == 'pending' %}active{% endif %}" onclick="window.location.href='?status=pending'">قيد الانتظار</button>
+                    <button class="tab {% if request.GET.status == 'resolved' %}active{% endif %}" onclick="window.location.href='?status=resolved'">تم الرد</button>
+                    <button class="tab {% if request.GET.status == 'rejected' %}active{% endif %}" onclick="window.location.href='?status=rejected'">مرفوض</button>
+                </div>
+            </div>
+
+            {% if inquiries %}
+            <table>
+                    <thead>
+                        <tr>
+                        <th>المرجع</th>
+                            <th>مركز الشرطة</th>
+                            <th>رقم البلاغ</th>
+                        <th class="phone-column">الهاتف</th>
+                            <th>الحالة</th>
+                        <th>إجراء</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for inquiry in inquiries %}
+                        <tr>
+                        <td><strong>#{{ inquiry.id }}</strong></td>
+                            <td>{{ inquiry.police_center }}</td>
+                        <td><strong>{{ inquiry.report_number }} / {{ inquiry.report_year }}</strong></td>
+                        <td class="phone-column" dir="ltr">{{ inquiry.phone }}</td>
+                        <td>
+                            {% if inquiry.status == 'resolved' %}
+                                <span class="badge resolved"><i class="fas fa-check-circle"></i> تم الرد</span>
+                            {% elif inquiry.status == 'rejected' %}
+                                <span class="badge rejected"><i class="fas fa-times-circle"></i> مرفوض</span>
+                                {% else %}
+                                <span class="badge pending"><i class="fas fa-clock"></i> قيد الانتظار</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                            <button class="btn btn-view" onclick="openModal('{{ inquiry.id }}', '{{ inquiry.police_center }}', '{{ inquiry.report_number }}', '{{ inquiry.report_year }}', '{{ inquiry.phone }}', '{{ inquiry.created_at|date:'d/m/Y - g:i A' }}', '{{ inquiry.response|escapejs }}', {{ inquiry.is_resolved|yesno:'true,false' }}, '{% if inquiry.responded_by %}{{ inquiry.responded_by.get_full_name|default:inquiry.responded_by.username }}{% endif %}', '{% if inquiry.resolved_at %}{{ inquiry.resolved_at|date:'d/m/Y - g:i A' }}{% endif %}', '{{ inquiry.status }}', {% if inquiry.reserved_by %}true{% else %}false{% endif %}, {% if inquiry.reserved_by.id == current_user.id %}true{% else %}false{% endif %}, '{% if inquiry.reserved_by %}{{ inquiry.reserved_by.get_full_name|default:inquiry.reserved_by.username }}{% endif %}', '{% if inquiry.rejection_reason %}{{ inquiry.rejection_reason|escapejs }}{% endif %}')">
+                                <i class="fas fa-eye"></i> عرض
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+            <p style="text-align: center; padding: 2rem; color: var(--text-light);">لا توجد استعلامات</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="inquiryModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title">تفاصيل #<span id="modalRefNumber"></span></span>
+                <button class="btn-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+                    </div>
+            <div class="modal-body">
+                <div class="info-item">
+                    <div class="info-label">مركز الشرطة</div>
+                    <div class="info-value" id="modalCenter"></div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">رقم البلاغ</div>
+                    <div class="info-value" id="modalReportNumber"></div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">رقم الهاتف</div>
+                    <div class="info-value" dir="ltr" id="modalPhone"></div>
+            </div>
+                <div class="info-item">
+                    <div class="info-label">تاريخ الاستعلام</div>
+                    <div class="info-value" id="modalDate"></div>
+                </div>
+                <div id="responseSection" style="display: none;">
+                    <div class="info-item" style="background: rgba(16, 185, 129, 0.1); border: 1px solid var(--success);">
+                        <div class="info-label" style="color: var(--success);">الرد</div>
+                        <div class="info-value" id="modalResponse"></div>
+                        <div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-light);">
+                            <span id="modalRespondedBy"></span> • <span id="modalResolvedAt"></span>
+                </div>
+                </div>
+                </div>
+                <div id="modalActions" class="modal-actions"></div>
+                </div>
+                </div>
+                </div>
+
+    <!-- Reject Modal -->
+    <div id="rejectModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title">رفض #<span id="rejectModalRef"></span></span>
+                <button class="btn-close" onclick="closeRejectModal()"><i class="fas fa-times"></i></button>
+                </div>
+            <div class="modal-body">
+                <textarea id="rejectionReason" rows="4" placeholder="سبب الرفض..."></textarea>
+                <div class="modal-actions">
+                    <button onclick="submitReject()" class="btn btn-action btn-reject">حفظ</button>
+                    <button onclick="closeRejectModal()" class="btn btn-action btn-clear">إلغاء</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Respond Modal -->
+    <div id="respondModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title">الرد على #<span id="respondModalRef"></span></span>
+                <button class="btn-close" onclick="closeRespondModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <textarea id="responseText" rows="4" placeholder="اكتب ردك..."></textarea>
+                <div class="modal-actions">
+                    <button onclick="submitRespond()" class="btn btn-action btn-respond">إرسال</button>
+                    <button onclick="closeRespondModal()" class="btn btn-action btn-clear">إلغاء</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentInquiryId = null;
+
+        // Theme
+        function toggleTheme() {
+            const html = document.documentElement;
+            const icon = document.getElementById('themeIcon');
+            if (html.getAttribute('data-theme') === 'dark') {
+                html.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            document.getElementById('themeIcon').className = 'fas fa-sun';
+        }
+
+        // Modal
+        function openModal(id, center, reportNumber, reportYear, phone, date, response, isResolved, respondedBy, resolvedAt, status, isReserved, isReservedByMe, reservedByName, rejectionReason) {
+            currentInquiryId = id;
+            document.getElementById('inquiryModal').style.display = 'block';
+            document.getElementById('modalRefNumber').textContent = id;
+            document.getElementById('modalCenter').textContent = center;
+            document.getElementById('modalReportNumber').textContent = reportNumber + ' / ' + reportYear;
+            document.getElementById('modalPhone').textContent = phone;
+            document.getElementById('modalDate').textContent = date;
+
+            const responseSection = document.getElementById('responseSection');
+            const modalActions = document.getElementById('modalActions');
+            
+            if (isResolved && response) {
+                responseSection.style.display = 'block';
+                document.getElementById('modalResponse').textContent = response;
+                document.getElementById('modalRespondedBy').textContent = respondedBy;
+                document.getElementById('modalResolvedAt').textContent = resolvedAt;
+            } else {
+                responseSection.style.display = 'none';
+            }
+
+            modalActions.innerHTML = '';
+            if (status === 'pending') {
+                if (!isReserved) {
+                    modalActions.innerHTML = '<button class="btn btn-action btn-reserve" onclick="reserveInquiry()"><i class="fas fa-lock"></i> حجز</button>';
+                } else if (isReservedByMe) {
+                    modalActions.innerHTML = `
+                        <button class="btn btn-action btn-unreserve" onclick="unreserveInquiry()"><i class="fas fa-unlock"></i> فك الحجز</button>
+                        <button class="btn btn-action btn-reject" onclick="openRejectModal()"><i class="fas fa-times"></i> رفض</button>
+                        <button class="btn btn-action btn-respond" onclick="openRespondModal()"><i class="fas fa-reply"></i> رد</button>
+                    `;
+                } else {
+                    modalActions.innerHTML = '<p style="color: var(--warning); text-align: center;">محجوز من: ' + reservedByName + '</p>';
+                }
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('inquiryModal').style.display = 'none';
+        }
+
+        function reserveInquiry() {
+            fetch(`/staff/reserve-inquiry/${currentInquiryId}/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+            }).then(r => r.json()).then(data => {
+                if (data.success) {
+                    document.getElementById('modalActions').innerHTML = `
+                        <button class="btn btn-action btn-unreserve" onclick="unreserveInquiry()"><i class="fas fa-unlock"></i> فك الحجز</button>
+                        <button class="btn btn-action btn-reject" onclick="openRejectModal()"><i class="fas fa-times"></i> رفض</button>
+                        <button class="btn btn-action btn-respond" onclick="openRespondModal()"><i class="fas fa-reply"></i> رد</button>
+                    `;
+                } else alert(data.message);
+            });
+        }
+
+        function unreserveInquiry() {
+            fetch(`/staff/unreserve-inquiry/${currentInquiryId}/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+            }).then(r => r.json()).then(data => {
+                if (data.success) {
+                    document.getElementById('modalActions').innerHTML = '<button class="btn btn-action btn-reserve" onclick="reserveInquiry()"><i class="fas fa-lock"></i> حجز</button>';
+                } else alert(data.message);
+            });
+        }
+
+        function openRejectModal() {
+            document.getElementById('rejectModalRef').textContent = currentInquiryId;
+            document.getElementById('rejectionReason').value = '';
+            document.getElementById('rejectModal').style.display = 'block';
+        }
+
+        function closeRejectModal() {
+            document.getElementById('rejectModal').style.display = 'none';
+        }
+
+        function submitReject() {
+            const reason = document.getElementById('rejectionReason').value.trim();
+            if (!reason) return alert('اكتب سبب الرفض');
+            
+            const formData = new FormData();
+            formData.append('rejection_reason', reason);
+            
+            fetch(`/staff/reject-inquiry/${currentInquiryId}/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                body: formData
+            }).then(r => r.json()).then(data => {
+                if (data.success) {
+                    closeRejectModal();
+                    closeModal();
+                    setTimeout(() => location.reload(), 300);
+                } else alert(data.message);
+            });
+        }
+
+        function openRespondModal() {
+            document.getElementById('respondModalRef').textContent = currentInquiryId;
+            document.getElementById('responseText').value = '';
+            document.getElementById('respondModal').style.display = 'block';
+        }
+
+        function closeRespondModal() {
+            document.getElementById('respondModal').style.display = 'none';
+        }
+
+        function submitRespond() {
+            const text = document.getElementById('responseText').value.trim();
+            if (!text) return alert('اكتب الرد');
+            
+            const formData = new FormData();
+            formData.append('response_text', text);
+            
+            fetch(`/staff/respond-inquiry-new/${currentInquiryId}/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                body: formData
+            }).then(r => r.json()).then(data => {
+                if (data.success) {
+                    closeRespondModal();
+                    closeModal();
+                    setTimeout(() => location.reload(), 300);
+                } else alert(data.message);
+            });
+        }
+
+        window.onclick = function(e) {
+            if (e.target.classList.contains('modal')) e.target.style.display = 'none';
+        }
+
+        setTimeout(() => {
+            document.querySelectorAll('.alert').forEach(el => el.remove());
+        }, 5000);
+
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            const overlay = document.getElementById('mobileMenuOverlay');
+            menu.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        // Update mobile theme icon when theme changes
+        function updateMobileThemeIcon() {
+            const theme = document.documentElement.getAttribute('data-theme');
+            const mobileIcon = document.getElementById('themeIconMobile');
+            if (mobileIcon) {
+                mobileIcon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+            }
+        }
+
+        // Override toggleTheme to update both icons
+        const originalToggleTheme = toggleTheme;
+        toggleTheme = function() {
+            originalToggleTheme();
+            updateMobileThemeIcon();
+        }
+
+        // Initialize mobile theme icon
+        updateMobileThemeIcon();
+
+        // Toggle Stats Section
+        function toggleStats() {
+            const content = document.getElementById('statsContent');
+            const toggle = document.getElementById('statsToggle');
+            content.classList.toggle('active');
+            toggle.classList.toggle('active');
+        }
+    </script>
+</body>
+</html>

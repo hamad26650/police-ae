@@ -1,0 +1,362 @@
+{% extends 'services/base.html' %}
+{% load static %}
+
+{% block title %}مخاطبة البنوك - وزارة الداخلية{% endblock %}
+
+{% block extra_css %}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Hide footer in this page */
+        footer {
+            display: none !important;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+            padding: 120px 0 80px;
+            color: #ffffff;
+            text-align: center;
+        }
+
+        .hero-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .hero-icon {
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            margin-bottom: 30px;
+        }
+
+        .hero-title {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+        }
+
+        .hero-description {
+            font-size: 1.2rem;
+            opacity: 0.95;
+            line-height: 1.6;
+        }
+
+        /* Form Section */
+        .form-section {
+            padding: 80px 0;
+            background: var(--bg-secondary);
+        }
+
+        .form-container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .form-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .form-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .form-label i {
+            color: #4a90e2;
+            font-size: 0.95rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 1rem;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+
+        select.form-input {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234a90e2' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: left 15px center;
+            padding-left: 40px;
+        }
+
+        textarea.form-input {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-error {
+            color: #dc3545;
+            font-size: 0.85rem;
+            margin-top: 5px;
+            display: block;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #4a90e2, #357abd);
+            color: white;
+            padding: 16px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(74, 144, 226, 0.3);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #4a90e2;
+            text-decoration: none;
+            margin-top: 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: #357abd;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @media (max-width: 768px) {
+            .hero-section {
+                padding: 80px 0 50px;
+            }
+
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .hero-description {
+                font-size: 1rem;
+            }
+
+            .form-section {
+                padding: 50px 0;
+            }
+
+            .form-card {
+                padding: 25px;
+            }
+
+            .form-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-container">
+            <div class="hero-icon">
+                <i class="fas fa-university"></i>
+            </div>
+            <h1 class="hero-title">مخاطبة البنوك</h1>
+            <p class="hero-description">
+                خدمة مخاطبة البنوك لتسهيل إجراءاتك المصرفية والمالية. نوفر لك التواصل المباشر مع المؤسسات المصرفية لإتمام معاملاتك بسرعة وأمان.
+            </p>
+        </div>
+    </section>
+
+    <!-- Form Section -->
+    <section class="form-section">
+        <div class="form-container">
+            <div class="form-card">
+                <h2 class="form-title">
+                    <i class="fas fa-file-alt"></i>
+                    نموذج مخاطبة البنوك
+                </h2>
+
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+                            <i class="fas {% if message.tags == 'error' %}fa-exclamation-circle{% else %}fa-check-circle{% endif %}"></i>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <form method="POST" action="{% url 'services:bank_contact' %}">
+                    {% csrf_token %}
+
+                    <!-- مركز الاختصاص -->
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.center.id_for_label }}">
+                            <i class="fas fa-building"></i>
+                            مركز الاختصاص
+                        </label>
+                        {{ form.center }}
+                        {% if form.center.errors %}
+                            {% for error in form.center.errors %}
+                                <span class="form-error">{{ error }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <!-- رقم البلاغ -->
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.report_number.id_for_label }}">
+                            <i class="fas fa-hashtag"></i>
+                            رقم البلاغ
+                        </label>
+                        {{ form.report_number }}
+                        {% if form.report_number.errors %}
+                            {% for error in form.report_number.errors %}
+                                <span class="form-error">{{ error }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <!-- السنة -->
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.report_year.id_for_label }}">
+                            <i class="fas fa-calendar"></i>
+                            السنة
+                        </label>
+                        {{ form.report_year }}
+                        {% if form.report_year.errors %}
+                            {% for error in form.report_year.errors %}
+                                <span class="form-error">{{ error }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <!-- التهمة -->
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.charge.id_for_label }}">
+                            <i class="fas fa-gavel"></i>
+                            التهمة
+                        </label>
+                        {{ form.charge }}
+                        {% if form.charge.errors %}
+                            {% for error in form.charge.errors %}
+                                <span class="form-error">{{ error }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <!-- اسم البنك -->
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.bank_name.id_for_label }}">
+                            <i class="fas fa-university"></i>
+                            اسم البنك
+                        </label>
+                        {{ form.bank_name }}
+                        {% if form.bank_name.errors %}
+                            {% for error in form.bank_name.errors %}
+                                <span class="form-error">{{ error }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <!-- رقم الحساب -->
+                    <div class="form-group">
+                        <label class="form-label" for="{{ form.account_number.id_for_label }}">
+                            <i class="fas fa-credit-card"></i>
+                            رقم الحساب
+                        </label>
+                        {{ form.account_number }}
+                        {% if form.account_number.errors %}
+                            {% for error in form.account_number.errors %}
+                                <span class="form-error">{{ error }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-paper-plane"></i>
+                        إرسال الطلب
+                    </button>
+                </form>
+
+                <div style="text-align: center;">
+                    <a href="{% url 'services:interior_ministry' %}" class="back-link">
+                        <i class="fas fa-arrow-right"></i>
+                        العودة إلى صفحة وزارة الداخلية
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

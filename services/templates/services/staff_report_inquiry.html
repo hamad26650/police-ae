@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الاستعلام عن البلاغات وتفاصيلها - لوحة الموظفين</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: #f5f7fa;
+            color: #1a202c;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 0;
+            display: flex;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%);
+            min-height: 100vh;
+            padding: 2rem 0;
+            box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            right: 0;
+            top: 0;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 0 2rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-title {
+            color: white;
+            font-size: 1.3rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 1rem 2rem;
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .sidebar-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .sidebar-link.active {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border-right: 4px solid #fbbf24;
+        }
+
+        .sidebar-link i {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .sidebar-link-text {
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-right: 280px;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Page Header */
+        .page-header {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            color: #1a202c;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .page-subtitle {
+            color: #64748b;
+            font-size: 1rem;
+        }
+
+        /* Search Card */
+        .search-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            margin-bottom: 2rem;
+        }
+
+        .search-card-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .form-label i {
+            color: #4a90e2;
+            margin-left: 5px;
+        }
+
+        .form-input,
+        .form-select {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .form-input:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: #94a3b8;
+        }
+
+        .date-range {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 1rem;
+            align-items: end;
+        }
+
+        .date-separator {
+            color: #64748b;
+            font-weight: 700;
+            padding-bottom: 0.875rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e1;
+        }
+
+        .btn-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+
+        /* Results */
+        .results-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .results-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1a202c;
+        }
+
+        .results-count {
+            background: #667eea;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 700;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: right;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background: #f8fafc;
+            font-weight: 700;
+            color: #475569;
+        }
+
+        tr:hover {
+            background: #f8fafc;
+        }
+
+        .badge {
+            padding: 0.375rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge-criminal { background: #fee; color: #c00; }
+        .badge-prosecution { background: #fef3c7; color: #92400e; }
+        .badge-status { background: #dbeafe; color: #1e40af; }
+
+        .badge-known { background: #d1fae5; color: #065f46; }
+        .badge-unknown { background: #fee; color: #991b1b; }
+        .badge-mixed { background: #fef3c7; color: #92400e; }
+
+        .btn-view {
+            padding: 0.5rem 1rem;
+            background: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .btn-view:hover {
+            background: #357abd;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #94a3b8;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(100%);
+                transition: transform 0.3s;
+            }
+
+            .main-content {
+                margin-right: 0;
+                padding: 1rem;
+            }
+
+            .search-card {
+                padding: 1.5rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .date-range {
+                grid-template-columns: 1fr;
+            }
+
+            .date-separator {
+                display: none;
+            }
+
+            .btn-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-title">
+                <i class="fas fa-shield-alt"></i>
+                البلاغات الجنائية
+            </div>
+            <div class="sidebar-subtitle">نظام إدارة البلاغات</div>
+        </div>
+        
+        <nav>
+            <ul class="sidebar-menu">
+                <li class="sidebar-item">
+                    <a href="{% url 'services:staff_report_completion' %}" class="sidebar-link">
+                        <i class="fas fa-clipboard-list"></i>
+                        <span class="sidebar-link-text">استكمال البلاغات</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="{% url 'services:staff_report_inquiry' %}" class="sidebar-link active">
+                        <i class="fas fa-search"></i>
+                        <span class="sidebar-link-text">الاستعلام عن البلاغات وتفاصيلها</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="page-title">
+                    <i class="fas fa-search"></i>
+                    الاستعلام عن البلاغات وتفاصيلها
+                </div>
+                <div class="page-subtitle">بحث متقدم عن البلاغات حسب معايير محددة</div>
+            </div>
+
+            <!-- Search Card -->
+            <div class="search-card">
+                <div class="search-card-title">
+                    <i class="fas fa-filter"></i>
+                    معايير البحث
+                </div>
+
+                <form method="GET" action="">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-building"></i>
+                                المركز
+                            </label>
+                            <select name="center" class="form-select">
+                                <option value="">جميع المراكز</option>
+                                {% for center in centers %}
+                                    <option value="{{ center.id }}" {% if request.GET.center == center.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ center.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-tag"></i>
+                                التصنيف
+                            </label>
+                            <select name="classification" class="form-select">
+                                <option value="">جميع التصنيفات</option>
+                                <option value="criminal" {% if request.GET.classification == "criminal" %}selected{% endif %}>جنائي</option>
+                                <option value="prosecution" {% if request.GET.classification == "prosecution" %}selected{% endif %}>عريضة نيابة</option>
+                                <option value="status_proof" {% if request.GET.classification == "status_proof" %}selected{% endif %}>إثبات حالة</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-user-secret"></i>
+                                المتهم
+                            </label>
+                            <select name="accused_status" class="form-select">
+                                <option value="">الكل</option>
+                                <option value="both" {% if request.GET.accused_status == "both" %}selected{% endif %}>معلوم ومجهول</option>
+                                <option value="known" {% if request.GET.accused_status == "known" %}selected{% endif %}>معلوم</option>
+                                <option value="unknown" {% if request.GET.accused_status == "unknown" %}selected{% endif %}>مجهول</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label class="form-label">
+                                <i class="fas fa-calendar-alt"></i>
+                                تاريخ البلاغ
+                            </label>
+                            <div class="date-range">
+                                <input 
+                                    type="date" 
+                                    name="date_from" 
+                                    class="form-input" 
+                                    value="{{ request.GET.date_from }}"
+                                    placeholder="من تاريخ"
+                                >
+                                <span class="date-separator">إلى</span>
+                                <input 
+                                    type="date" 
+                                    name="date_to" 
+                                    class="form-input" 
+                                    value="{{ request.GET.date_to }}"
+                                    placeholder="إلى تاريخ"
+                                >
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="btn-actions">
+                        <a href="{% url 'services:staff_report_inquiry' %}" class="btn btn-secondary">
+                            <i class="fas fa-redo"></i>
+                            إعادة تعيين
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i>
+                            بحث
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Results -->
+            {% if searched %}
+            <div class="results-card">
+                <div class="results-header">
+                    <div class="results-title">نتائج البحث</div>
+                    <div class="results-count">{{ reports|length }} بلاغ</div>
+                </div>
+
+                {% if reports %}
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>رقم المرجع</th>
+                                <th>اسم الشاكي</th>
+                                <th>التصنيف</th>
+                                <th>المتهم</th>
+                                <th>تاريخ التقديم</th>
+                                <th>الحالة</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for report in reports %}
+                            <tr>
+                                <td><strong>{{ report.reference_number }}</strong></td>
+                                <td>{{ report.complainant_name }}</td>
+                                <td>
+                                    <span class="badge badge-criminal">جنائي</span>
+                                </td>
+                                <td>
+                                    {% if report.accused_parties %}
+                                        {% if report.accused_parties|length > 0 %}
+                                            {% if report.accused_parties.0.name %}
+                                                <span class="badge badge-known">معلوم</span>
+                                            {% else %}
+                                                <span class="badge badge-unknown">مجهول</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="badge badge-unknown">مجهول</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="badge badge-unknown">مجهول</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ report.created_at|date:"d/m/Y" }}</td>
+                                <td>{{ report.get_status_display }}</td>
+                                <td>
+                                    {% if report.status == 'report_created' %}
+                                        <a href="{% url 'services:create_official_report' report.id %}" class="btn-view">
+                                            <i class="fas fa-folder-open"></i> عرض
+                                        </a>
+                                    {% else %}
+                                        <a href="{% url 'services:criminal_report_detail' report.id %}" class="btn-view">
+                                            <i class="fas fa-eye"></i> عرض
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <h3>لا توجد نتائج</h3>
+                    <p>لم يتم العثور على بلاغات تطابق معايير البحث</p>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
+
