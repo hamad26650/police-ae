@@ -88,12 +88,26 @@ WSGI_APPLICATION = 'gov_services.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# استخدام PostgreSQL في الإنتاج، SQLite في التطوير المحلي
+import dj_database_url
+
+if 'DATABASE_URL' in os.environ:
+    # الإنتاج: استخدام PostgreSQL من Railway/Render
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=os.environ.get('DATABASE_URL'),
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
     }
-}
+else:
+    # التطوير المحلي: استخدام SQLite
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
@@ -190,7 +204,7 @@ CSRF_COOKIE_DOMAIN = None
 CSRF_HEADER_NAME = 'HTTP_X_CSRFTOKEN'
 CSRF_FAILURE_VIEW = 'django.views.csrf.csrf_failure'
 
-# النطاقات الموثوقة - محلي فقط
+# النطاقات الموثوقة - محلي والإنتاج
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:8000',
     'http://127.0.0.1:8000',
@@ -198,18 +212,35 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1',
 ]
 
+# إضافة نطاقات الإنتاج من متغيرات البيئة
+if 'RAILWAY_STATIC_URL' in os.environ:
+    railway_url = os.environ.get('RAILWAY_STATIC_URL', '')
+    if railway_url:
+        CSRF_TRUSTED_ORIGINS.append(f'https://{railway_url}')
+        CSRF_TRUSTED_ORIGINS.append(f'http://{railway_url}')
+
+# إضافة نطاقات إضافية من ALLOWED_HOSTS
+for host in ALLOWED_HOSTS:
+    if host not in ['localhost', '127.0.0.1', '*']:
+        if not host.startswith('http'):
+            CSRF_TRUSTED_ORIGINS.append(f'https://{host}')
+            CSRF_TRUSTED_ORIGINS.append(f'http://{host}')
+
 # XSS Protection
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
 
-# إعدادات إضافية للإنتاج (فعّلها عند استخدام HTTPS)
-# SECURE_SSL_REDIRECT = True
-# SESSION_COOKIE_SECURE = True
-# CSRF_COOKIE_SECURE = True
-# SECURE_HSTS_SECONDS = 31536000
-# SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-# SECURE_HSTS_PRELOAD = True
+# إعدادات إضافية للإنتاج (تفعيل HTTPS في الإنتاج)
+if 'DATABASE_URL' in os.environ:
+    # الإنتاج: تفعيل إعدادات HTTPS
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Password Hashing (استخدام PBKDF2 - آمن وسريع)
 PASSWORD_HASHERS = [

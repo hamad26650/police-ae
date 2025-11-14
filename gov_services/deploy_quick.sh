@@ -44,3 +44,4 @@ echo "2. أنشئ مستخدم admin: python manage.py createsuperuser"
 echo "3. شغل الموقع: gunicorn gov_services.wsgi:application --config gunicorn_config.py"
 echo ""
 
+

@@ -13,3 +13,4 @@ EMAIL_HOST_PASSWORD=your-app-password-here
 # Optional: Other settings
 # SENTRY_DSN=your-sentry-dsn-here
 
+
