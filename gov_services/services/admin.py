@@ -12,7 +12,7 @@ class CustomAdminSite(AdminSite):
         css = {
             'all': ('services/admin/css/custom_admin.css',)
         }
-from .models import Service, ServiceRequest, Inquiry, SiteSettings, Center, EmployeeProfile, SMSMessage, AuditLog
+from .models import Service, ServiceRequest, Inquiry, SiteSettings, Center, EmployeeProfile, SMSMessage, AuditLog, RequestAttachment, CriminalReport, CriminalReportActivity, ReportNote, BankContactRequest
 
 @admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):
@@ -23,18 +23,22 @@ class ServiceAdmin(admin.ModelAdmin):
 
 @admin.register(ServiceRequest)
 class ServiceRequestAdmin(admin.ModelAdmin):
-    list_display = ['requester_name', 'service', 'status', 'center', 'assigned_to', 'reserved_by', 'created_at']
-    list_filter = ['status', 'service', 'center', 'created_at']
-    search_fields = ['requester_name', 'requester_email', 'requester_national_id']
+    list_display = ['requester_name', 'service', 'case_type', 'status', 'center', 'assigned_to', 'created_at']
+    list_filter = ['status', 'case_type', 'service', 'center', 'created_at', 'manual_classification']
+    search_fields = ['requester_name', 'requester_email', 'requester_national_id', 'petition_text']
     list_editable = ['status', 'center', 'assigned_to']
-    readonly_fields = ['created_at', 'updated_at', 'reserved_at']
+    readonly_fields = ['created_at', 'updated_at', 'reserved_at', 'case_type_confidence', 'ai_analysis_notes']
     
     fieldsets = (
         ('معلومات المتقدم', {
             'fields': ('requester_name', 'requester_email', 'requester_phone', 'requester_national_id')
         }),
         ('تفاصيل الطلب', {
-            'fields': ('service', 'request_details', 'status')
+            'fields': ('service', 'request_details', 'petition_text', 'status')
+        }),
+        ('التصنيف الذكي', {
+            'fields': ('case_type', 'case_type_confidence', 'manual_classification', 'ai_analysis_notes'),
+            'classes': ('wide',)
         }),
         ('إدارة الطلب', {
             'fields': ('center', 'assigned_to', 'notes')
@@ -45,6 +49,27 @@ class ServiceRequestAdmin(admin.ModelAdmin):
         }),
         ('التواريخ', {
             'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+@admin.register(RequestAttachment)
+class RequestAttachmentAdmin(admin.ModelAdmin):
+    list_display = ['file_name', 'request', 'file_type', 'get_file_size_display', 'uploaded_at']
+    list_filter = ['file_type', 'uploaded_at']
+    search_fields = ['file_name', 'request__requester_name', 'extracted_text']
+    readonly_fields = ['uploaded_at', 'extracted_text']
+    
+    fieldsets = (
+        ('معلومات الملف', {
+            'fields': ('request', 'file', 'file_name', 'file_type', 'file_size')
+        }),
+        ('النص المستخرج', {
+            'fields': ('extracted_text',),
+            'classes': ('collapse',)
+        }),
+        ('التواريخ', {
+            'fields': ('uploaded_at',),
             'classes': ('collapse',)
         }),
     )
@@ -134,3 +159,89 @@ class AuditLogAdmin(admin.ModelAdmin):
     
     def has_delete_permission(self, request, obj=None):
         return request.user.is_superuser
+
+@admin.register(CriminalReport)
+class CriminalReportAdmin(admin.ModelAdmin):
+    list_display = ['reference_number', 'complainant_name', 'police_center', 'complaint_type', 'status', 'assigned_to', 'created_at']
+    list_filter = ['status', 'police_center', 'complaint_type', 'created_at']
+    search_fields = ['reference_number', 'complainant_name', 'complainant_phone', 'complainant_email']
+    list_editable = ['status', 'assigned_to']
+    readonly_fields = ['reference_number', 'created_at', 'updated_at', 'reserved_at']
+    
+    fieldsets = (
+        ('رقم المرجع', {
+            'fields': ('reference_number',)
+        }),
+        ('بيانات الشاكي', {
+            'fields': ('complainant_name', 'complainant_id', 'complainant_phone', 'complainant_email')
+        }),
+        ('بيانات البلاغ', {
+            'fields': ('police_center', 'complaint_type', 'status')
+        }),
+        ('تفاصيل الواقعة', {
+            'fields': ('complaint_subject', 'incident_date', 'incident_time', 'incident_location', 'incident_lat', 'incident_lng'),
+            'classes': ('collapse',)
+        }),
+        ('العلاقة والاتفاق', {
+            'fields': ('relationship', 'agreement_type'),
+            'classes': ('collapse',)
+        }),
+        ('المبالغ والممتلكات', {
+            'fields': ('money_seized', 'seized_amount', 'seized_property'),
+            'classes': ('collapse',)
+        }),
+        ('طريقة التحويل', {
+            'fields': ('transfer_method', 'bank_name', 'account_number', 'other_transfer_method'),
+            'classes': ('collapse',)
+        }),
+        ('الشهود والإثباتات', {
+            'fields': ('has_witnesses', 'witnesses_info', 'has_evidence', 'evidence_description'),
+            'classes': ('collapse',)
+        }),
+        ('أقوال إضافية', {
+            'fields': ('additional_statements',),
+            'classes': ('collapse',)
+        }),
+        ('المشكو في حقهم', {
+            'fields': ('accused_parties',),
+            'classes': ('collapse',)
+        }),
+        ('إدارة البلاغ', {
+            'fields': ('assigned_to', 'reserved_by', 'reserved_at', 'staff_notes')
+        }),
+        ('التواريخ', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+@admin.register(CriminalReportActivity)
+class CriminalReportActivityAdmin(admin.ModelAdmin):
+    list_display = ['report', 'action_type', 'user', 'created_at']
+    list_filter = ['action_type', 'created_at']
+    search_fields = ['report__reference_number', 'description', 'user__username']
+    readonly_fields = ['report', 'action_type', 'user', 'description', 'old_value', 'new_value', 'created_at']
+    
+    def has_add_permission(self, request):
+        return False
+    
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+@admin.register(ReportNote)
+class ReportNoteAdmin(admin.ModelAdmin):
+    list_display = ['report', 'note_type', 'created_by', 'created_at', 'is_deleted']
+    list_filter = ['note_type', 'is_deleted', 'created_at']
+    search_fields = ['report__reference_number', 'content', 'created_by__username']
+    readonly_fields = ['report', 'note_type', 'content', 'created_by', 'created_at']
+    
+    def has_add_permission(self, request):
+        return False
+
+@admin.register(BankContactRequest)
+class BankContactRequestAdmin(admin.ModelAdmin):
+    list_display = ['bank_name', 'center', 'report_number', 'report_year', 'status', 'created_at']
+    list_filter = ['status', 'center', 'created_at']
+    search_fields = ['bank_name', 'report_number', 'account_number', 'charge']
+    list_editable = ['status']
+    readonly_fields = ['created_at', 'updated_at']

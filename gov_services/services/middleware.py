@@ -2,6 +2,7 @@
 Custom Middleware للأمان
 """
 import logging
+from .utils.helpers import get_client_ip
 
 logger = logging.getLogger('services')
 
@@ -72,21 +73,12 @@ class RequestLoggingMiddleware:
         for suspicious in self.suspicious_paths:
             if suspicious in path:
                 logger.warning(
-                    f'Suspicious request detected: {request.path} from IP: {self.get_client_ip(request)}'
+                    f'Suspicious request detected: {request.path} from IP: {get_client_ip(request)}'
                 )
                 break
         
         response = self.get_response(request)
         return response
-
-    def get_client_ip(self, request):
-        """الحصول على IP الحقيقي"""
-        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-        if x_forwarded_for:
-            ip = x_forwarded_for.split(',')[0]
-        else:
-            ip = request.META.get('REMOTE_ADDR')
-        return ip
 
 
 class BlockSuspiciousIPMiddleware:
@@ -99,7 +91,7 @@ class BlockSuspiciousIPMiddleware:
         self.blocked_ips = set()
 
     def __call__(self, request):
-        ip = self.get_client_ip(request)
+        ip = get_client_ip(request)
         
         if ip in self.blocked_ips:
             logger.error(f'Blocked IP attempt: {ip}')
@@ -108,12 +100,3 @@ class BlockSuspiciousIPMiddleware:
         
         response = self.get_response(request)
         return response
-
-    def get_client_ip(self, request):
-        """الحصول على IP الحقيقي"""
-        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-        if x_forwarded_for:
-            ip = x_forwarded_for.split(',')[0]
-        else:
-            ip = request.META.get('REMOTE_ADDR')
-        return ip

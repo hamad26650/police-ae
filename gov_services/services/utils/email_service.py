@@ -5,8 +5,6 @@ Email Service for Sending Notifications
 
 import logging
 from django.core.mail import send_mail
-from django.template.loader import render_to_string
-from django.utils.html import strip_tags
 from django.conf import settings
 
 logger = logging.getLogger('services')
@@ -526,6 +524,270 @@ info@police.ae | +971-6-123-4567
         except Exception as e:
             logger.error(f'فشل إرسال إيميل تأكيد للطلب: {str(e)}')
             return {'success': False, 'message': f'فشل إرسال الإيميل: {str(e)}'}
+    
+    @staticmethod
+    def send_bank_contact_request(bank_request):
+        """
+        إرسال طلب مخاطبة البنك إلى البنك المحدد
+        
+        Args:
+            bank_request: كائن BankContactRequest
+        
+        Returns:
+            dict: نتيجة الإرسال {'success': bool, 'message': str}
+        """
+        # قاموس الإيميلات الخاصة بكل بنك
+        BANK_EMAILS = {
+            'بنك ابوظبي التجاري': 'Project.test85@outlook.com',
+            'مصرف ابوظبي الاسلامي': 'Project.test85@outlook.com',
+            'بنك دبي الاسلامي': 'Project.test85@outlook.com',
+        }
+        
+        # التحقق من إعدادات البريد الإلكتروني
+        if not settings.EMAIL_HOST_USER or not settings.EMAIL_HOST_PASSWORD:
+            logger.warning('إعدادات البريد الإلكتروني غير مكتملة - تم حفظ الطلب بدون إرسال إيميل')
+            return {
+                'success': True,
+                'message': 'تم حفظ الطلب بنجاح. لتفعيل إرسال الإيميلات، يرجى إضافة إعدادات البريد الإلكتروني.'
+            }
+        
+        try:
+            import socket
+            socket.setdefaulttimeout(10)
+            
+            # الحصول على إيميل البنك
+            bank_email = BANK_EMAILS.get(bank_request.bank_name)
+            
+            if not bank_email:
+                logger.warning(f'لا يوجد إيميل مسجل للبنك: {bank_request.bank_name}')
+                return {
+                    'success': False,
+                    'message': f'لا يوجد إيميل مسجل للبنك: {bank_request.bank_name}'
+                }
+            
+            center_email = bank_request.center.email if bank_request.center and bank_request.center.email else None
+            recipients = [bank_email]
+            if center_email and center_email not in recipients:
+                recipients.append(center_email)
+            
+            # عنوان الرسالة
+            subject = f'طلب مخاطبة من مركز شرطة - البلاغ رقم {bank_request.report_number}/{bank_request.report_year}'
+            
+            # محتوى الرسالة (HTML)
+            html_message = f"""
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {{
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 20px;
+            direction: rtl;
+        }}
+        .container {{
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }}
+        .header {{
+            background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }}
+        .header h1 {{
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+        }}
+        .header p {{
+            margin: 10px 0 0 0;
+            font-size: 14px;
+            opacity: 0.95;
+        }}
+        .content {{
+            padding: 30px 20px;
+        }}
+        .request-info {{
+            background-color: #f8f9fb;
+            border-right: 4px solid #4a90e2;
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+        }}
+        .request-info h3 {{
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+            font-size: 16px;
+        }}
+        .request-info p {{
+            margin: 8px 0;
+            color: #555;
+            font-size: 14px;
+        }}
+        .request-info strong {{
+            color: #2c3e50;
+        }}
+        .details-box {{
+            background-color: #ffffff;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }}
+        .details-box h3 {{
+            margin: 0 0 15px 0;
+            color: #2c3e50;
+            font-size: 16px;
+        }}
+        .details-text {{
+            color: #2c3e50;
+            line-height: 1.8;
+            font-size: 15px;
+        }}
+        .footer {{
+            background-color: #f8f9fb;
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid #e1e8ed;
+        }}
+        .footer p {{
+            margin: 5px 0;
+            color: #7f8c8d;
+            font-size: 13px;
+        }}
+        .divider {{
+            height: 1px;
+            background-color: #e1e8ed;
+            margin: 25px 0;
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚓 مركز شرطة البحيرة</h1>
+            <p>الشارقة - دولة الإمارات العربية المتحدة</p>
+        </div>
+        
+        <div class="content">
+            <div class="request-info">
+                <h3>📋 طلب مخاطبة البنك</h3>
+                <p><strong>اسم البنك:</strong> {bank_request.bank_name}</p>
+                <p><strong>مركز الاختصاص:</strong> {bank_request.center.name}</p>
+                <p><strong>رقم البلاغ:</strong> {bank_request.report_number}/{bank_request.report_year}</p>
+                <p><strong>التهمة:</strong> {bank_request.charge}</p>
+                <p><strong>رقم الحساب:</strong> {bank_request.account_number}</p>
+                <p><strong>تاريخ الطلب:</strong> {bank_request.created_at.strftime('%Y-%m-%d %H:%M')}</p>
+            </div>
+            
+            <div class="details-box">
+                <h3>📝 تفاصيل الطلب</h3>
+                <div class="details-text">
+                    <p>نرجو منكم التكرم بالتعاون معنا في هذا الطلب المتعلق بالبلاغ رقم <strong>{bank_request.report_number}/{bank_request.report_year}</strong>.</p>
+                    <p><strong>التهمة:</strong> {bank_request.charge}</p>
+                    <p><strong>رقم الحساب:</strong> {bank_request.account_number}</p>
+                    <p>يرجى التواصل معنا في أقرب وقت ممكن.</p>
+                </div>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <p style="color: #7f8c8d; font-size: 14px; text-align: center;">
+                نشكركم على تعاونكم معنا.
+            </p>
+        </div>
+        
+        <div class="footer">
+            <p><strong>مركز شرطة البحيرة</strong></p>
+            <p>📧 info@police.ae | 📞 +971-6-123-4567</p>
+            <p style="margin-top: 15px; font-size: 12px;">
+                © 2024 مركز شرطة البحيرة. جميع الحقوق محفوظة.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+            """
+            
+            # النص البسيط (للإيميلات التي لا تدعم HTML)
+            plain_message = f"""
+مركز شرطة البحيرة
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+طلب مخاطبة البنك
+
+اسم البنك: {bank_request.bank_name}
+مركز الاختصاص: {bank_request.center.name}
+رقم البلاغ: {bank_request.report_number}/{bank_request.report_year}
+التهمة: {bank_request.charge}
+رقم الحساب: {bank_request.account_number}
+تاريخ الطلب: {bank_request.created_at.strftime('%Y-%m-%d %H:%M')}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+نرجو منكم التكرم بالتعاون معنا في هذا الطلب المتعلق بالبلاغ رقم {bank_request.report_number}/{bank_request.report_year}.
+
+التهمة: {bank_request.charge}
+رقم الحساب: {bank_request.account_number}
+
+يرجى التواصل معنا في أقرب وقت ممكن.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+نشكركم على تعاونكم معنا.
+
+مركز شرطة البحيرة
+الشارقة - دولة الإمارات العربية المتحدة
+info@police.ae | +971-6-123-4567
+            """
+            
+            # إرسال الرسالة
+            send_mail(
+                subject=subject,
+                message=plain_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=recipients,
+                html_message=html_message,
+                fail_silently=False,
+            )
+            
+            logger.info(f'✅ تم إرسال طلب مخاطبة البنك {bank_request.id} إلى {", ".join(recipients)}')
+            
+            return {
+                'success': True,
+                'message': f'تم إرسال الطلب إلى {bank_request.bank_name} بنجاح'
+            }
+            
+        except socket.timeout:
+            logger.error(f'انتهت مهلة الاتصال بخادم البريد الإلكتروني لطلب مخاطبة البنك {bank_request.id}')
+            return {
+                'success': True,
+                'message': 'تم حفظ الطلب بنجاح. فشل إرسال البريد الإلكتروني بسبب انتهاء المهلة. تحقق من إعدادات SMTP.'
+            }
+        except Exception as e:
+            error_msg = str(e)
+            logger.error(f'فشل إرسال البريد الإلكتروني لطلب مخاطبة البنك {bank_request.id}: {error_msg}')
+            
+            # رسائل خطأ واضحة
+            if 'Authentication' in error_msg or '535' in error_msg:
+                user_message = 'تم حفظ الطلب بنجاح. فشل إرسال البريد الإلكتروني: خطأ في المصادقة. تحقق من EMAIL_HOST_USER وEMAIL_HOST_PASSWORD.'
+            elif 'timeout' in error_msg.lower():
+                user_message = 'تم حفظ الطلب بنجاح. فشل إرسال البريد الإلكتروني: انتهت مهلة الاتصال.'
+            else:
+                user_message = f'تم حفظ الطلب بنجاح. فشل إرسال البريد الإلكتروني: {error_msg[:100]}'
+            
+            return {
+                'success': True,
+                'message': user_message
+            }
 
 
 # إنشاء instance من الخدمة

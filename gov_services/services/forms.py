@@ -232,3 +232,144 @@ class ServiceRequestForm(forms.Form):
             'rows': 5
         })
     )
+    
+    petition_text = forms.CharField(
+        min_length=50,
+        max_length=5000,
+        required=False,
+        error_messages={
+            'min_length': 'نص العريضة قصير جداً (50 حرف على الأقل)',
+            'max_length': 'نص العريضة طويل جداً (5000 حرف كحد أقصى)'
+        },
+        widget=forms.Textarea(attrs={
+            'class': 'form-input',
+            'placeholder': 'اكتب نص العريضة كاملاً هنا... (اختياري)',
+            'rows': 10
+        })
+    )
+    
+    attachments = forms.FileField(
+        required=False,
+        widget=forms.FileInput(attrs={
+            'class': 'form-input',
+            'accept': '.pdf,.jpg,.jpeg,.png,.doc,.docx',
+            'id': 'attachments'
+        }),
+        help_text='يمكنك رفع ملفات PDF، صور، أو مستندات Word (حد أقصى 10 ملفات، كل ملف حتى 5 MB)'
+    )
+
+
+# خيارات مراكز الاختصاص لمخاطبة البنوك
+BANK_CONTACT_CENTER_CHOICES = [
+    ('', '-- اختر مركز الاختصاص --'),
+    ('مركز شرطة البحيرة', 'مركز شرطة البحيرة'),
+    ('مركز شرطة الغرب', 'مركز شرطة الغرب'),
+]
+
+
+class BankContactForm(forms.Form):
+    """نموذج مخاطبة البنوك"""
+    
+    center = forms.ChoiceField(
+        choices=BANK_CONTACT_CENTER_CHOICES,
+        required=True,
+        error_messages={
+            'required': 'يرجى اختيار مركز الاختصاص',
+            'invalid_choice': 'مركز الاختصاص المختار غير صحيح'
+        },
+        widget=forms.Select(attrs={
+            'class': 'form-input',
+            'id': 'center'
+        })
+    )
+    
+    report_number = forms.IntegerField(
+        min_value=1,
+        max_value=9999,
+        required=True,
+        error_messages={
+            'required': 'يرجى إدخال رقم البلاغ',
+            'invalid': 'رقم البلاغ يجب أن يكون رقماً',
+            'min_value': 'رقم البلاغ يجب أن يكون 1 على الأقل',
+            'max_value': 'رقم البلاغ يجب أن يكون 9999 كحد أقصى'
+        },
+        widget=forms.NumberInput(attrs={
+            'class': 'form-input',
+            'placeholder': 'أدخل رقم البلاغ (1-9999)',
+            'id': 'report_number',
+            'min': '1',
+            'max': '9999'
+        })
+    )
+    
+    report_year = forms.ChoiceField(
+        choices=[
+            ('', '-- اختر السنة --'),
+            (2020, '2020'),
+            (2021, '2021'),
+            (2022, '2022'),
+            (2023, '2023'),
+            (2024, '2024'),
+            (2025, '2025'),
+        ],
+        required=True,
+        error_messages={
+            'required': 'يرجى اختيار السنة',
+            'invalid_choice': 'السنة المختارة غير صحيحة'
+        },
+        widget=forms.Select(attrs={
+            'class': 'form-input',
+            'id': 'report_year'
+        })
+    )
+    
+    charge = forms.ChoiceField(
+        choices=[
+            ('', '-- اختر التهمة --'),
+            ('خيانة الامانة', 'خيانة الامانة'),
+            ('السب', 'السب'),
+            ('الاستيلاء', 'الاستيلاء'),
+            ('التهديد', 'التهديد'),
+        ],
+        required=True,
+        error_messages={
+            'required': 'يرجى اختيار التهمة',
+            'invalid_choice': 'الخيار المحدد غير صحيح'
+        },
+        widget=forms.Select(attrs={
+            'class': 'form-input',
+            'id': 'charge'
+        })
+    )
+    
+    bank_name = forms.ChoiceField(
+        choices=[
+            ('', '-- اختر اسم البنك --'),
+            ('بنك ابوظبي التجاري', 'بنك ابوظبي التجاري'),
+            ('مصرف ابوظبي الاسلامي', 'مصرف ابوظبي الاسلامي'),
+            ('بنك دبي الاسلامي', 'بنك دبي الاسلامي'),
+        ],
+        required=True,
+        error_messages={
+            'required': 'يرجى اختيار اسم البنك',
+            'invalid_choice': 'الخيار المحدد غير صحيح'
+        },
+        widget=forms.Select(attrs={
+            'class': 'form-input',
+            'id': 'bank_name'
+        })
+    )
+    
+    account_number = forms.CharField(
+        max_length=100,
+        required=True,
+        error_messages={
+            'required': 'يرجى إدخال رقم الحساب',
+            'max_length': 'رقم الحساب طويل جداً'
+        },
+        widget=forms.TextInput(attrs={
+            'class': 'form-input',
+            'placeholder': 'أدخل رقم الحساب',
+            'id': 'account_number'
+        })
+    )

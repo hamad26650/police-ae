@@ -71,6 +71,21 @@ class ServiceRequest(models.Model):
     requester_phone = models.CharField(max_length=20, verbose_name="رقم الهاتف")
     requester_national_id = models.CharField(max_length=20, verbose_name="رقم الهوية")
     request_details = models.TextField(verbose_name="تفاصيل الطلب")
+    
+    # حقول البلاغ الذكي
+    petition_text = models.TextField(blank=True, null=True, verbose_name="نص العريضة")
+    
+    CASE_TYPE_CHOICES = [
+        ('pending', 'قيد التحليل'),
+        ('civil', 'مدني'),
+        ('criminal', 'جزائي'),
+        ('unknown', 'غير محدد'),
+    ]
+    case_type = models.CharField(max_length=20, choices=CASE_TYPE_CHOICES, default='pending', verbose_name="نوع القضية")
+    case_type_confidence = models.DecimalField(max_digits=5, decimal_places=2, default=0.0, verbose_name="نسبة الثقة بالتصنيف (%)")
+    manual_classification = models.BooleanField(default=False, verbose_name="تصنيف يدوي")
+    ai_analysis_notes = models.TextField(blank=True, null=True, verbose_name="ملاحظات التحليل الذكي")
+    
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name="الحالة")
     priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='medium', verbose_name="الأولوية")
     assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="مُسند إلى")
@@ -104,6 +119,52 @@ class ServiceRequest(models.Model):
     def can_be_reserved_by(self, user):
         """التحقق من إمكانية حجز الطلب بواسطة المستخدم"""
         return not self.is_reserved() or self.reserved_by == user
+    
+    def get_case_type_display_ar(self):
+        """عرض نوع القضية بالعربية مع أيقونة"""
+        icons = {
+            'civil': '📋',
+            'criminal': '🚔',
+            'pending': '⏳',
+            'unknown': '❓'
+        }
+        return f"{icons.get(self.case_type, '❓')} {self.get_case_type_display()}"
+
+# نموذج الملفات المرفقة
+class RequestAttachment(models.Model):
+    """الملفات المرفقة بالبلاغ"""
+    FILE_TYPE_CHOICES = [
+        ('pdf', 'PDF'),
+        ('image', 'صورة'),
+        ('doc', 'مستند Word'),
+        ('other', 'أخرى'),
+    ]
+    
+    request = models.ForeignKey(ServiceRequest, on_delete=models.CASCADE, 
+                               related_name='attachments', verbose_name="البلاغ")
+    file = models.FileField(upload_to='attachments/%Y/%m/%d/', verbose_name="الملف")
+    file_type = models.CharField(max_length=10, choices=FILE_TYPE_CHOICES, verbose_name="نوع الملف")
+    file_name = models.CharField(max_length=255, verbose_name="اسم الملف")
+    file_size = models.IntegerField(default=0, verbose_name="حجم الملف (بايت)")
+    extracted_text = models.TextField(blank=True, null=True, verbose_name="النص المستخرج")
+    uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name="تاريخ الرفع")
+    
+    class Meta:
+        verbose_name = "ملف مرفق"
+        verbose_name_plural = "الملفات المرفقة"
+        ordering = ['-uploaded_at']
+    
+    def __str__(self):
+        return f"{self.file_name} - {self.request.get_request_id()}"
+    
+    def get_file_size_display(self):
+        """عرض حجم الملف بشكل مقروء"""
+        size = self.file_size
+        for unit in ['B', 'KB', 'MB', 'GB']:
+            if size < 1024.0:
+                return f"{size:.1f} {unit}"
+            size /= 1024.0
+        return f"{size:.1f} TB"
 
 # نموذج الرسائل النصية
 class SMSMessage(models.Model):
@@ -272,3 +333,193 @@ class EmployeeProfile(models.Model):
         elif self.role == 'center' and self.center:
             return Center.objects.filter(id=self.center.id, is_active=True)
         return Center.objects.none()
+
+
+class CriminalReport(models.Model):
+    """نموذج البلاغ الجنائي"""
+    STATUS_CHOICES = [
+        ('new_request', 'طلب جديد'),
+        ('in_progress', 'قيد الإجراء'),
+        ('awaiting_response', 'بانتظار الرد'),
+        ('report_created', 'تم إنشاء بلاغ'),
+        ('archived', 'محفوظ'),
+        ('rejected', 'مرفوض'),
+        ('out_of_jurisdiction', 'خارج الاختصاص'),
+    ]
+    
+    # رقم المرجع
+    reference_number = models.CharField(max_length=50, unique=True, verbose_name="رقم المرجع")
+    
+    # بيانات الشاكي
+    complainant_name = models.CharField(max_length=200, verbose_name="اسم الشاكي")
+    complainant_id = models.CharField(max_length=50, verbose_name="رقم الهوية")
+    complainant_phone = models.CharField(max_length=20, verbose_name="رقم الهاتف")
+    complainant_email = models.EmailField(verbose_name="البريد الإلكتروني")
+    
+    # بيانات البلاغ
+    police_center = models.CharField(max_length=200, verbose_name="مركز الشرطة")
+    complaint_type = models.CharField(max_length=100, verbose_name="نوع البلاغ")
+    
+    # تفاصيل البلاغ
+    complaint_subject = models.TextField(blank=True, verbose_name="موضوع البلاغ")
+    incident_date = models.DateField(null=True, blank=True, verbose_name="تاريخ الواقعة")
+    incident_time = models.TimeField(null=True, blank=True, verbose_name="وقت الواقعة")
+    incident_location = models.TextField(blank=True, verbose_name="مكان الواقعة")
+    incident_lat = models.DecimalField(max_digits=10, decimal_places=7, null=True, blank=True, verbose_name="خط العرض")
+    incident_lng = models.DecimalField(max_digits=10, decimal_places=7, null=True, blank=True, verbose_name="خط الطول")
+    
+    # العلاقة والاتفاق
+    relationship = models.CharField(max_length=200, blank=True, verbose_name="العلاقة بالمشكو ضده")
+    agreement_type = models.CharField(max_length=100, blank=True, verbose_name="نوع الاتفاق")
+    
+    # المبالغ والممتلكات
+    money_seized = models.CharField(max_length=10, blank=True, verbose_name="استيلاء على مبلغ مالي")
+    seized_amount = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True, verbose_name="المبلغ المستولى عليه")
+    seized_property = models.TextField(blank=True, verbose_name="الممتلكات المستولى عليها")
+    
+    # طريقة التحويل
+    transfer_method = models.CharField(max_length=100, blank=True, verbose_name="طريقة التسليم")
+    bank_name = models.CharField(max_length=200, blank=True, verbose_name="اسم المصرف")
+    account_number = models.CharField(max_length=100, blank=True, verbose_name="رقم الحساب")
+    other_transfer_method = models.TextField(blank=True, verbose_name="طريقة تسليم أخرى")
+    
+    # الشهود والإثباتات
+    has_witnesses = models.CharField(max_length=10, blank=True, verbose_name="وجود شهود")
+    witnesses_info = models.TextField(blank=True, verbose_name="بيانات الشهود")
+    has_evidence = models.CharField(max_length=10, blank=True, verbose_name="وجود إثباتات")
+    evidence_description = models.TextField(blank=True, verbose_name="وصف الإثباتات")
+    
+    # أقوال إضافية
+    additional_statements = models.TextField(blank=True, verbose_name="أقوال إضافية")
+    
+    # بيانات المشكو في حقه (JSON)
+    accused_parties = models.JSONField(default=list, verbose_name="المشكو في حقهم")
+    
+    # حالة البلاغ
+    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='new_request', verbose_name="الحالة")
+    
+    # الموظف المسؤول
+    assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_reports', verbose_name="محال إلى")
+    reserved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='reserved_reports', verbose_name="محجوز من قبل")
+    reserved_at = models.DateTimeField(null=True, blank=True, verbose_name="وقت الحجز")
+    
+    # ملاحظات الموظف
+    staff_notes = models.TextField(blank=True, verbose_name="ملاحظات الموظف (داخلية)")
+    client_notes = models.TextField(blank=True, verbose_name="ملاحظات للمتعامل")
+    additional_questions = models.TextField(blank=True, verbose_name="أسئلة إضافية للمتعامل")
+    
+    # التواريخ
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاريخ الإنشاء")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="تاريخ التحديث")
+    
+    class Meta:
+        verbose_name = "بلاغ جنائي"
+        verbose_name_plural = "البلاغات الجنائية"
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"#{self.reference_number} - {self.complainant_name}"
+    
+    def save(self, *args, **kwargs):
+        # إنشاء رقم مرجع تلقائي إذا لم يكن موجوداً
+        if not self.reference_number:
+            import datetime
+            year = datetime.datetime.now().year
+            # أخذ آخر رقم وإضافة 1
+            last_report = CriminalReport.objects.filter(
+                reference_number__startswith=f'CR-{year}-'
+            ).order_by('-id').first()
+            
+            if last_report:
+                try:
+                    last_num = int(last_report.reference_number.split('-')[-1])
+                    new_num = last_num + 1
+                except:
+                    new_num = 1
+            else:
+                new_num = 1
+            
+            self.reference_number = f'CR-{year}-{new_num:05d}'
+        
+        super().save(*args, **kwargs)
+
+
+# نموذج سجل إجراءات البلاغات الجنائية
+class CriminalReportActivity(models.Model):
+    ACTION_TYPES = [
+        ('created', 'تم إنشاء البلاغ'),
+        ('reserved', 'تم حجز الطلب'),
+        ('released', 'تم فك الحجز'),
+        ('status_changed', 'تم تغيير الحالة'),
+        ('note_added', 'تم إضافة ملاحظة'),
+        ('question_sent', 'تم إرسال أسئلة'),
+        ('assigned', 'تم التحويل'),
+    ]
+    
+    report = models.ForeignKey(CriminalReport, on_delete=models.CASCADE, related_name='activities', verbose_name="البلاغ")
+    action_type = models.CharField(max_length=20, choices=ACTION_TYPES, verbose_name="نوع الإجراء")
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="الموظف")
+    description = models.TextField(verbose_name="الوصف")
+    old_value = models.TextField(blank=True, verbose_name="القيمة القديمة")
+    new_value = models.TextField(blank=True, verbose_name="القيمة الجديدة")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="التاريخ والوقت")
+    
+    class Meta:
+        verbose_name = "إجراء"
+        verbose_name_plural = "سجل الإجراءات"
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.get_action_type_display()} - {self.report.reference_number}"
+
+
+# نموذج ملاحظات البلاغات (محفوظة ودائمة)
+class ReportNote(models.Model):
+    NOTE_TYPES = [
+        ('staff', 'ملاحظة داخلية'),
+        ('client', 'ملاحظة للمتعامل'),
+    ]
+    
+    report = models.ForeignKey(CriminalReport, on_delete=models.CASCADE, related_name='notes', verbose_name="البلاغ")
+    note_type = models.CharField(max_length=10, choices=NOTE_TYPES, verbose_name="نوع الملاحظة")
+    content = models.TextField(verbose_name="المحتوى")
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name="كتبها")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="التاريخ والوقت")
+    is_deleted = models.BooleanField(default=False, verbose_name="محذوف")
+    
+    class Meta:
+        verbose_name = "ملاحظة"
+        verbose_name_plural = "الملاحظات"
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.get_note_type_display()} - {self.report.reference_number}"
+
+
+# نموذج طلبات مخاطبة البنوك
+class BankContactRequest(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'قيد الانتظار'),
+        ('in_progress', 'قيد المعالجة'),
+        ('completed', 'مكتمل'),
+        ('rejected', 'مرفوض'),
+    ]
+    
+    center = models.ForeignKey(Center, on_delete=models.CASCADE, verbose_name="مركز الاختصاص")
+    report_number = models.CharField(max_length=50, verbose_name="رقم البلاغ")
+    report_year = models.IntegerField(verbose_name="السنة")
+    charge = models.CharField(max_length=500, verbose_name="التهمة")
+    bank_name = models.CharField(max_length=200, verbose_name="اسم البنك")
+    account_number = models.CharField(max_length=100, verbose_name="رقم الحساب")
+    
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name="الحالة")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاريخ الإنشاء")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="تاريخ التحديث")
+    
+    class Meta:
+        verbose_name = "طلب مخاطبة بنك"
+        verbose_name_plural = "طلبات مخاطبة البنوك"
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"طلب مخاطبة {self.bank_name} - {self.report_number}/{self.report_year}"

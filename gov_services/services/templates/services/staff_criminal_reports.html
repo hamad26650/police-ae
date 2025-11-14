@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>البلاغات الجنائية - لوحة الموظفين</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: #f5f7fa;
+            color: #1a202c;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 0;
+            display: flex;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%);
+            min-height: 100vh;
+            padding: 2rem 0;
+            box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            right: 0;
+            top: 0;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 0 2rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-title {
+            color: white;
+            font-size: 1.3rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 1rem 2rem;
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .sidebar-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .sidebar-link.active {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border-right: 4px solid #fbbf24;
+        }
+
+        .sidebar-link i {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .sidebar-link-text {
+            font-weight: 600;
+        }
+
+        .sidebar-toggle {
+            display: none;
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 101;
+            background: #1e3a8a;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-right: 280px;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(100%);
+                transition: transform 0.3s;
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .sidebar-toggle {
+                display: block;
+            }
+
+            .main-content {
+                margin-right: 0;
+                padding: 1rem;
+                padding-top: 4rem;
+            }
+        }
+
+        /* Header */
+        .page-header {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .page-title h1 {
+            font-size: 1.8rem;
+            color: #1a202c;
+            font-weight: 800;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #4a90e2;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #357abd;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e1;
+        }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            text-decoration: none;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card.active {
+            border-color: #4a90e2;
+            background: #f0f7ff;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #1a202c;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .main-content {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            margin-top: 2rem;
+        }
+
+        /* Filters */
+        .filters-section {
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .filters-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 1rem;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .form-control {
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #4a90e2;
+        }
+
+        .filters-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+
+        .btn-search {
+            background: #4a90e2;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-search:hover {
+            background: #357abd;
+        }
+
+        .btn-reset {
+            background: white;
+            color: #64748b;
+            padding: 0.75rem 1.5rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-reset:hover {
+            background: #f8fafc;
+        }
+
+        /* Table */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f8fafc;
+        }
+
+        thead th {
+            padding: 1rem;
+            text-align: right;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #475569;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #f1f5f9;
+            transition: background 0.2s;
+        }
+
+        tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        tbody td {
+            padding: 1rem;
+            color: #1e293b;
+            font-size: 0.95rem;
+        }
+
+        /* Status Badges */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            white-space: nowrap;
+        }
+
+        .status-new_request {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-in_progress {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-awaiting_response {
+            background: #e9d5ff;
+            color: #6b21a8;
+        }
+
+        .status-report_created {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-archived {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .status-rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-out_of_jurisdiction {
+            background: #fce7f3;
+            color: #831843;
+        }
+
+        /* Action Button */
+        .btn-view {
+            background: #4a90e2;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .btn-view:hover {
+            background: #357abd;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #64748b;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .page-header {
+                padding: 1.5rem;
+            }
+
+            .header-top {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 0.85rem;
+            }
+
+            thead th,
+            tbody td {
+                padding: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Toggle Button for Mobile -->
+    <button class="sidebar-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-title">
+                <i class="fas fa-shield-alt"></i>
+                البلاغات الجنائية
+            </div>
+            <div class="sidebar-subtitle">نظام إدارة البلاغات</div>
+        </div>
+        
+        <nav>
+            <ul class="sidebar-menu">
+                <li class="sidebar-item">
+                    <a href="{% url 'services:staff_report_completion' %}" class="sidebar-link">
+                        <i class="fas fa-clipboard-list"></i>
+                        <span class="sidebar-link-text">استكمال البلاغات</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="{% url 'services:staff_report_inquiry' %}" class="sidebar-link">
+                        <i class="fas fa-search"></i>
+                        <span class="sidebar-link-text">الاستعلام عن البلاغات وتفاصيلها</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="header-top">
+                <div class="page-title">
+                    <h1><i class="fas fa-clipboard-list"></i> إدارة البلاغات الجنائية</h1>
+                </div>
+                <div class="header-actions">
+                    <a href="{% url 'services:staff_home' %}" class="btn btn-secondary">
+                        <i class="fas fa-home"></i> الرئيسية
+                    </a>
+                    <a href="{% url 'services:staff_dashboard' %}" class="btn btn-primary">
+                        <i class="fas fa-tachometer-alt"></i> لوحة التحكم
+                    </a>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <a href="?status=" class="stat-card {% if not current_status %}active{% endif %}">
+                    <div class="stat-value">{{ total_reports }}</div>
+                    <div class="stat-label">إجمالي البلاغات</div>
+                </a>
+
+                <a href="?status=new_request" class="stat-card {% if current_status == 'new_request' %}active{% endif %}">
+                    <div class="stat-value">{{ new_request_reports }}</div>
+                    <div class="stat-label">طلبات جديدة</div>
+                </a>
+
+                <a href="?status=in_progress" class="stat-card {% if current_status == 'in_progress' %}active{% endif %}">
+                    <div class="stat-value">{{ in_progress_reports }}</div>
+                    <div class="stat-label">قيد الإجراء</div>
+                </a>
+
+                <a href="?status=awaiting_response" class="stat-card {% if current_status == 'awaiting_response' %}active{% endif %}">
+                    <div class="stat-value">{{ awaiting_response_reports }}</div>
+                    <div class="stat-label">بانتظار الرد</div>
+                </a>
+
+                <a href="?status=report_created" class="stat-card {% if current_status == 'report_created' %}active{% endif %}">
+                    <div class="stat-value">{{ report_created_reports }}</div>
+                    <div class="stat-label">تم إنشاء بلاغ</div>
+                </a>
+
+                <a href="?status=archived" class="stat-card {% if current_status == 'archived' %}active{% endif %}">
+                    <div class="stat-value">{{ archived_reports }}</div>
+                    <div class="stat-label">محفوظة</div>
+                </a>
+
+                <a href="?status=rejected" class="stat-card {% if current_status == 'rejected' %}active{% endif %}">
+                    <div class="stat-value">{{ rejected_reports }}</div>
+                    <div class="stat-label">مرفوضة</div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Filters Section -->
+            <div class="filters-section">
+                <h2 class="filters-title">
+                    <i class="fas fa-filter"></i> البحث والفلترة
+                </h2>
+                <form method="GET" action="{% url 'services:staff_criminal_reports' %}">
+                    <div class="filters-grid">
+                        <div class="form-group">
+                            <label class="form-label">رقم المرجع</label>
+                            <input 
+                                type="text" 
+                                name="reference" 
+                                class="form-control" 
+                                placeholder="ابحث برقم المرجع..."
+                                value="{{ reference_query|default:'' }}">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">رقم الهاتف</label>
+                            <input 
+                                type="text" 
+                                name="phone" 
+                                class="form-control" 
+                                placeholder="ابحث برقم الهاتف..."
+                                value="{{ phone_query|default:'' }}">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">نوع الحالة</label>
+                            <select name="status" class="form-control">
+                                <option value="">جميع الحالات</option>
+                                <option value="new_request" {% if current_status == 'new_request' %}selected{% endif %}>طلب جديد</option>
+                                <option value="in_progress" {% if current_status == 'in_progress' %}selected{% endif %}>قيد الإجراء</option>
+                                <option value="awaiting_response" {% if current_status == 'awaiting_response' %}selected{% endif %}>بانتظار الرد</option>
+                                <option value="report_created" {% if current_status == 'report_created' %}selected{% endif %}>تم إنشاء بلاغ</option>
+                                <option value="archived" {% if current_status == 'archived' %}selected{% endif %}>محفوظ</option>
+                                <option value="rejected" {% if current_status == 'rejected' %}selected{% endif %}>مرفوض</option>
+                                <option value="out_of_jurisdiction" {% if current_status == 'out_of_jurisdiction' %}selected{% endif %}>خارج الاختصاص</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">من تاريخ</label>
+                            <input 
+                                type="date" 
+                                name="date_from" 
+                                class="form-control"
+                                value="{{ date_from|default:'' }}">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">إلى تاريخ</label>
+                            <input 
+                                type="date" 
+                                name="date_to" 
+                                class="form-control"
+                                value="{{ date_to|default:'' }}">
+                        </div>
+                    </div>
+
+                    <div class="filters-buttons">
+                        <a href="{% url 'services:staff_criminal_reports' %}" class="btn-reset">
+                            <i class="fas fa-redo"></i> إعادة تعيين
+                        </a>
+                        <button type="submit" class="btn-search">
+                            <i class="fas fa-search"></i> بحث
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Table -->
+            {% if reports %}
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>رقم المرجع</th>
+                            <th>رقم الهاتف</th>
+                            <th>نوع البلاغ</th>
+                            <th>تاريخ التقديم</th>
+                            <th>الحالة</th>
+                            <th>محجوز بواسطة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for report in reports %}
+                        <tr>
+                            <td><strong>{{ report.reference_number }}</strong></td>
+                            <td>{{ report.complainant_phone }}</td>
+                            <td>{{ report.complaint_type }}</td>
+                            <td>{{ report.created_at|date:"d/m/Y H:i" }}</td>
+                            <td>
+                                <span class="status-badge status-{{ report.status }}">
+                                    {{ report.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if report.reserved_by %}
+                                    {{ report.reserved_by.get_full_name|default:report.reserved_by.username }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if report.status == 'report_created' %}
+                                    <a href="{% url 'services:create_official_report' report.id %}" class="btn-view">
+                                        <i class="fas fa-file-alt"></i> عرض البلاغ
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'services:criminal_report_detail' report.id %}" class="btn-view">
+                                        <i class="fas fa-eye"></i> عرض
+                                    </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <h3>لا توجد بلاغات</h3>
+                <p>لم يتم العثور على أي بلاغات تطابق معايير البحث</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if messages %}
+        <script>
+            {% for message in messages %}
+                alert('{{ message }}');
+            {% endfor %}
+        </script>
+    {% endif %}
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('active');
+        }
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const toggle = document.querySelector('.sidebar-toggle');
+            
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(event.target) && !toggle.contains(event.target)) {
+                    sidebar.classList.remove('active');
+                }
+            }
+        });
+    </script>
+        </div>
+    </div>
+</body>
+</html>

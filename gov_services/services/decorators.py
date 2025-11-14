@@ -7,6 +7,7 @@ from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render
 from django.contrib import messages
 import logging
+from .utils.helpers import get_client_ip
 
 logger = logging.getLogger('services')
 
@@ -118,16 +119,6 @@ def track_failed_login(max_attempts=5, lockout_time=900):
             return func(request, *args, **kwargs)
         return wrapper
     return decorator
-
-
-def get_client_ip(request):
-    """الحصول على IP الحقيقي للمستخدم"""
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0]
-    else:
-        ip = request.META.get('REMOTE_ADDR')
-    return ip
 
 
 def log_user_activity(activity_type):

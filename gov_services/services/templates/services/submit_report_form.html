@@ -1,0 +1,1825 @@
+{% extends 'services/base.html' %}
+{% load static %}
+
+{% block title %}تقديم بلاغ - نظام الشرطة الذكي{% endblock %}
+
+{% block extra_css %}
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&libraries=places&language=ar" defer></script>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;600;700;800&display=swap');
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Tajawal', sans-serif;
+        background: #f8fafc;
+    }
+
+    [data-theme="dark"] body {
+        background: #0f172a;
+    }
+
+    .page-wrapper {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 40px 20px 60px;
+    }
+
+    /* Top Header */
+    .page-header {
+        text-align: center;
+        margin-bottom: 40px;
+        animation: slideDown 0.6s ease;
+    }
+
+    .header-badge {
+        display: inline-block;
+        background: linear-gradient(135deg, #3b82f6, #60a5fa);
+        color: white;
+        padding: 8px 20px;
+        border-radius: 50px;
+        font-size: 0.9rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+    }
+
+    .page-title {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #1e293b;
+        margin-bottom: 10px;
+    }
+
+    [data-theme="dark"] .page-title {
+        color: #f1f5f9;
+    }
+
+    .page-subtitle {
+        font-size: 1.05rem;
+        color: #64748b;
+        font-weight: 400;
+    }
+
+    /* Messages */
+    .alert-message {
+        background: white;
+        border: 2px solid #3b82f6;
+        border-right: 5px solid #3b82f6;
+        padding: 16px 22px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        animation: fadeIn 0.5s ease;
+    }
+
+    [data-theme="dark"] .alert-message {
+        background: #1e293b;
+        border-color: #3b82f6;
+    }
+
+    .alert-message.error {
+        border-color: #ef4444;
+    }
+
+    .alert-message i {
+        font-size: 1.3rem;
+        color: #3b82f6;
+    }
+
+    .alert-message.error i {
+        color: #ef4444;
+    }
+
+    .alert-message span {
+        color: #1e293b;
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+
+    [data-theme="dark"] .alert-message span {
+        color: #e2e8f0;
+    }
+
+    /* Form Container */
+    .form-container {
+        background: white;
+        border-radius: 20px;
+        padding: 0;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        animation: fadeInUp 0.7s ease;
+    }
+
+    [data-theme="dark"] .form-container {
+        background: #1e293b;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Section */
+    .form-section {
+        padding: 35px 40px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    [data-theme="dark"] .form-section {
+        border-bottom-color: #334155;
+    }
+
+    .form-section:last-child {
+        border-bottom: none;
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 28px;
+    }
+
+    .section-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #3b82f6, #60a5fa);
+        color: white;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.25);
+        flex-shrink: 0;
+    }
+
+    .section-info h3 {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: #1e293b;
+        margin: 0 0 5px 0;
+    }
+
+    [data-theme="dark"] .section-info h3 {
+        color: #f1f5f9;
+    }
+
+    .section-info p {
+        font-size: 0.9rem;
+        color: #64748b;
+        margin: 0;
+    }
+
+    .section-note {
+        background: #eff6ff;
+        border-right: 4px solid #3b82f6;
+        padding: 14px 18px;
+        border-radius: 10px;
+        margin-bottom: 25px;
+        font-size: 0.9rem;
+        color: #1e40af;
+        font-weight: 600;
+    }
+
+    [data-theme="dark"] .section-note {
+        background: rgba(59, 130, 246, 0.1);
+        color: #93c5fd;
+    }
+
+    /* Fields */
+    .fields-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 22px;
+    }
+
+    .field-item {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .field-item.full {
+        grid-column: 1 / -1;
+    }
+
+    .field-label {
+        font-weight: 700;
+        color: #334155;
+        font-size: 0.92rem;
+    }
+
+    [data-theme="dark"] .field-label {
+        color: #cbd5e1;
+    }
+
+    .required-star {
+        color: #ef4444;
+    }
+
+    .field-input,
+    .field-select,
+    .field-textarea {
+        width: 100%;
+        padding: 14px 18px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-family: 'Tajawal', sans-serif;
+        background: white;
+        color: #1e293b;
+        transition: all 0.3s ease;
+        font-weight: 600;
+    }
+
+    .field-select {
+        cursor: pointer;
+        height: 52px;
+        padding: 14px 18px;
+    }
+
+    .field-select option {
+        padding: 15px;
+        font-size: 1rem;
+        font-weight: 600;
+        background: white;
+        color: #1e293b;
+        border-bottom: 1px solid #f1f5f9;
+        line-height: 1.8;
+    }
+
+    .field-select option:hover {
+        background: #eff6ff;
+        color: #3b82f6;
+    }
+
+    .field-select option:checked {
+        background: #3b82f6;
+        color: white;
+    }
+
+    .field-select option[value=""] {
+        color: #94a3b8;
+        font-style: italic;
+    }
+
+    [data-theme="dark"] .field-input,
+    [data-theme="dark"] .field-select,
+    [data-theme="dark"] .field-textarea {
+        background: #1e293b;
+        border-color: #334155;
+        color: #e2e8f0;
+    }
+
+    [data-theme="dark"] .field-select option {
+        background: #1e293b;
+        color: #e2e8f0;
+        border-bottom-color: #334155;
+    }
+
+    [data-theme="dark"] .field-select option:hover {
+        background: #334155;
+        color: #60a5fa;
+    }
+
+    [data-theme="dark"] .field-select option:checked {
+        background: #3b82f6;
+        color: white;
+    }
+
+    [data-theme="dark"] .field-select option[value=""] {
+        color: #64748b;
+    }
+
+    .field-input:hover,
+    .field-select:hover,
+    .field-textarea:hover {
+        border-color: #cbd5e1;
+    }
+
+    .field-input:focus,
+    .field-select:focus,
+    .field-textarea:focus {
+        outline: none;
+        border-color: #3b82f6;
+        background: white;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+        transform: translateY(-1px);
+    }
+
+    [data-theme="dark"] .field-input:focus,
+    [data-theme="dark"] .field-select:focus,
+    [data-theme="dark"] .field-textarea:focus {
+        background: #1e293b;
+    }
+
+    .field-textarea {
+        min-height: 110px;
+        resize: vertical;
+    }
+
+    /* Radio Buttons */
+    .radio-options {
+        display: flex;
+        gap: 12px;
+    }
+
+    .radio-option {
+        flex: 1;
+    }
+
+    .radio-option input[type="radio"] {
+        display: none;
+    }
+
+    .radio-btn {
+        display: block;
+        padding: 13px 18px;
+        background: #f8fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        font-weight: 700;
+        color: #64748b;
+        font-size: 0.95rem;
+    }
+
+    [data-theme="dark"] .radio-btn {
+        background: #0f172a;
+        border-color: #334155;
+        color: #94a3b8;
+    }
+
+    .radio-btn:hover {
+        border-color: #3b82f6;
+        background: #eff6ff;
+    }
+
+    [data-theme="dark"] .radio-btn:hover {
+        background: #1e3a8a;
+    }
+
+    .radio-option input[type="radio"]:checked + .radio-btn {
+        background: linear-gradient(135deg, #3b82f6, #60a5fa);
+        border-color: transparent;
+        color: white;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    /* DateTime Grid */
+    .datetime-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+        margin-top: 10px;
+    }
+
+    .datetime-field {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .datetime-label {
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    [data-theme="dark"] .datetime-label {
+        color: #94a3b8;
+    }
+
+    .datetime-label i {
+        color: #3b82f6;
+        font-size: 0.95rem;
+    }
+
+    @media (max-width: 640px) {
+        .datetime-grid {
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+    }
+
+    /* Location Picker */
+    .location-wrapper {
+        width: 100%;
+    }
+
+    .location-input-group {
+        display: flex;
+        gap: 10px;
+        align-items: stretch;
+    }
+
+    .location-input-group .field-input {
+        flex: 1;
+        margin: 0;
+    }
+
+    .location-btn {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        border: none;
+        padding: 0 20px;
+        border-radius: 12px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-family: 'Tajawal', sans-serif;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        white-space: nowrap;
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    }
+
+    .location-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    }
+
+    .location-btn:active {
+        transform: translateY(0);
+    }
+
+    .location-btn i {
+        font-size: 1.1rem;
+    }
+
+    .location-map {
+        width: 100%;
+        height: 350px;
+        border-radius: 12px;
+        margin-top: 15px;
+        border: 2px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    [data-theme="dark"] .location-map {
+        border-color: #334155;
+    }
+
+    @media (max-width: 640px) {
+        .location-input-group {
+            flex-direction: column;
+        }
+
+        .location-btn {
+            justify-content: center;
+            padding: 14px 20px;
+        }
+
+        .location-map {
+            height: 300px;
+        }
+    }
+
+    /* Conditional */
+    .conditional-box {
+        margin-top: 20px;
+        padding: 20px;
+        background: #eff6ff;
+        border: 2px solid #dbeafe;
+        border-radius: 12px;
+    }
+
+    [data-theme="dark"] .conditional-box {
+        background: #1e3a8a;
+        border-color: #1e40af;
+    }
+
+    /* File Upload */
+    .file-wrapper {
+        border: 2px dashed #cbd5e1;
+        border-radius: 14px;
+        padding: 32px 24px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        background: #f8fafc;
+    }
+
+    [data-theme="dark"] .file-wrapper {
+        background: #0f172a;
+        border-color: #334155;
+    }
+
+    .file-wrapper:hover {
+        border-color: #3b82f6;
+        background: #eff6ff;
+    }
+
+    [data-theme="dark"] .file-wrapper:hover {
+        background: #1e3a8a;
+    }
+
+    .file-wrapper.uploaded {
+        border-style: solid;
+        border-color: #3b82f6;
+        background: #dbeafe;
+    }
+
+    [data-theme="dark"] .file-wrapper.uploaded {
+        background: rgba(59, 130, 246, 0.15);
+    }
+
+    .file-icon {
+        font-size: 2.8rem;
+        color: #3b82f6;
+        margin-bottom: 12px;
+    }
+
+    .file-text {
+        font-weight: 700;
+        color: #334155;
+        margin-bottom: 4px;
+        font-size: 0.95rem;
+    }
+
+    [data-theme="dark"] .file-text {
+        color: #cbd5e1;
+    }
+
+    .file-hint {
+        font-size: 0.82rem;
+        color: #64748b;
+    }
+
+    .file-display {
+        margin-top: 12px;
+        padding: 10px 16px;
+        background: rgba(59, 130, 246, 0.15);
+        border-radius: 8px;
+        color: #3b82f6;
+        font-weight: 700;
+        font-size: 0.9rem;
+        display: none;
+    }
+
+    .file-wrapper.uploaded .file-display {
+        display: block;
+    }
+
+    .file-input-hidden {
+        display: none;
+    }
+
+    /* Checkbox */
+    .checkbox-wrapper {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 20px;
+        background: #fef3c7;
+        border: 2px solid #fbbf24;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.25s ease;
+    }
+
+    [data-theme="dark"] .checkbox-wrapper {
+        background: rgba(251, 191, 36, 0.1);
+        border-color: #fbbf24;
+    }
+
+    .checkbox-wrapper:hover {
+        background: #fde68a;
+    }
+
+    [data-theme="dark"] .checkbox-wrapper:hover {
+        background: rgba(251, 191, 36, 0.15);
+    }
+
+    .checkbox-input {
+        width: 24px;
+        height: 24px;
+        cursor: pointer;
+        accent-color: #3b82f6;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    .checkbox-label {
+        font-weight: 600;
+        color: #92400e;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        cursor: pointer;
+    }
+
+    [data-theme="dark"] .checkbox-label {
+        color: #fcd34d;
+    }
+
+    /* Add Party Button */
+    .add-party-btn {
+        width: 100%;
+        padding: 14px 24px;
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-family: 'Tajawal', sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 20px;
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    }
+
+    .add-party-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    }
+
+    /* Accused Party Card */
+    .accused-party-card {
+        background: #f8fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 25px;
+        margin-bottom: 20px;
+        position: relative;
+        animation: slideIn 0.3s ease;
+    }
+
+    [data-theme="dark"] .accused-party-card {
+        background: #0f172a;
+        border-color: #334155;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+        transform: translateY(0);
+        }
+    }
+
+    @keyframes slideOut {
+        from {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        to {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+    }
+
+    .party-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    [data-theme="dark"] .party-card-header {
+        border-bottom-color: #334155;
+    }
+
+    .party-card-title {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: #1e293b;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    [data-theme="dark"] .party-card-title {
+        color: #f1f5f9;
+    }
+
+    .party-card-number {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, #3b82f6, #60a5fa);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        font-weight: 800;
+    }
+
+    .remove-party-btn {
+        background: #ef4444;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .remove-party-btn:hover {
+        background: #dc2626;
+        transform: scale(1.05);
+    }
+
+    /* Submit */
+    .submit-wrapper {
+        padding: 35px 40px;
+        background: #f8fafc;
+        text-align: center;
+    }
+
+    [data-theme="dark"] .submit-wrapper {
+        background: #0f172a;
+    }
+
+    .submit-button {
+        background: linear-gradient(135deg, #3b82f6, #60a5fa);
+        color: white;
+        border: none;
+        padding: 16px 60px;
+        border-radius: 12px;
+        font-size: 1.15rem;
+        font-weight: 800;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-family: 'Tajawal', sans-serif;
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.35);
+    }
+
+    .submit-button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 35px rgba(59, 130, 246, 0.45);
+    }
+
+    .submit-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    /* Animations */
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Hidden */
+    .hidden {
+        display: none !important;
+    }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+        .page-wrapper {
+            padding: 25px 15px 50px;
+        }
+
+        .accused-party-card {
+            padding: 20px;
+        }
+
+        .party-card-title {
+            font-size: 1rem;
+        }
+
+        .party-card-number {
+            width: 28px;
+            height: 28px;
+            font-size: 0.85rem;
+        }
+
+        .remove-party-btn {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+
+        .add-party-btn {
+            font-size: 0.95rem;
+            padding: 12px 20px;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+        }
+
+        .header-badge {
+            font-size: 0.85rem;
+            padding: 6px 16px;
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+        }
+
+        .page-subtitle {
+            font-size: 0.95rem;
+        }
+
+        .form-section {
+            padding: 28px 25px;
+        }
+
+        .section-icon {
+            width: 45px;
+            height: 45px;
+            font-size: 1.2rem;
+        }
+
+        .section-info h3 {
+            font-size: 1.25rem;
+        }
+
+        .section-info p {
+            font-size: 0.85rem;
+        }
+
+        .fields-grid {
+            grid-template-columns: 1fr;
+            gap: 18px;
+        }
+
+        .radio-options {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .file-wrapper {
+            padding: 28px 20px;
+        }
+
+        .file-icon {
+            font-size: 2.5rem;
+        }
+
+        .submit-wrapper {
+            padding: 28px 25px;
+        }
+
+        .submit-button {
+            width: 100%;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .page-wrapper {
+            padding: 20px 12px 40px;
+        }
+
+        .page-title {
+            font-size: 1.6rem;
+        }
+
+        .page-subtitle {
+            font-size: 0.9rem;
+        }
+
+        .form-section {
+            padding: 22px 18px;
+        }
+
+        .section-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 1.1rem;
+        }
+
+        .section-info h3 {
+            font-size: 1.15rem;
+        }
+
+        .field-input,
+        .field-select,
+        .field-textarea {
+            padding: 12px 14px;
+            font-size: 0.95rem;
+        }
+
+        .submit-wrapper {
+            padding: 25px 18px;
+        }
+
+        .submit-button {
+            padding: 14px 35px;
+            font-size: 1.05rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-wrapper">
+        
+        <!-- Header -->
+    <div class="page-header">
+        <span class="header-badge">
+            <i class="fas fa-shield-alt"></i> نظام البلاغات الإلكتروني
+        </span>
+        <h1 class="page-title">تقديم بلاغ جديد</h1>
+        <p class="page-subtitle">يرجى تعبئة جميع البيانات بدقة</p>
+            </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert-message {{ message.tags }}">
+            <i class="fas fa-{% if message.tags == 'success' %}check-circle{% else %}exclamation-circle{% endif %}"></i>
+            <span>{{ message }}</span>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+        <!-- Form -->
+    <form method="POST" enctype="multipart/form-data" id="reportForm">
+                {% csrf_token %}
+
+        <div class="form-container">
+
+            <!-- القسم الأول: بيانات الشاكي -->
+                <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="section-info">
+                        <h3>القسم الأول: بيانات الشاكي</h3>
+                        <p>المعلومات الشخصية لمقدم البلاغ</p>
+                    </div>
+                </div>
+
+                <div class="section-note">
+                    <i class="fas fa-info-circle"></i> ملاحظة: تعبئة جميع الحقول إلزامية.
+                    </div>
+
+                <div class="fields-grid">
+                    <div class="field-item">
+                        <label class="field-label">
+                            <span class="required-star">*</span> الاسم الكامل
+                        </label>
+                        <input type="text" name="name" class="field-input" placeholder="أدخل الاسم الكامل" required>
+                    </div>
+
+                    <div class="field-item">
+                        <label class="field-label">
+                            <span class="required-star">*</span> رقم الهوية الإماراتية
+                        </label>
+                        <input type="text" name="national_id" class="field-input" placeholder="784-XXXX-XXXXXXX-X" required dir="ltr">
+                    </div>
+
+                    <div class="field-item">
+                        <label class="field-label">
+                            <span class="required-star">*</span> رقم الهاتف المتحرك
+                        </label>
+                        <input type="tel" name="phone" class="field-input" placeholder="05XXXXXXXX" required dir="ltr">
+                    </div>
+
+                    <div class="field-item">
+                        <label class="field-label">
+                            <span class="required-star">*</span> البريد الإلكتروني
+                        </label>
+                        <input type="email" name="email" class="field-input" placeholder="example@email.com" required dir="ltr">
+                    </div>
+                    </div>
+                </div>
+
+            <!-- القسم الثاني: بيانات المشكو في حقه -->
+                <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-user-secret"></i>
+                    </div>
+                    <div class="section-info">
+                        <h3>القسم الثاني: بيانات المشكو في حقه</h3>
+                        <p>معلومات الأطراف المشكو ضدهم</p>
+                    </div>
+                </div>
+
+                <div class="section-note">
+                    <i class="fas fa-info-circle"></i> ملاحظة: يمكنك إضافة أكثر من طرف مشكو في حقه.
+                </div>
+
+                <div id="accusedParties"></div>
+
+                <button type="button" id="addAccusedBtn" class="add-party-btn">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>إضافة مشكو آخر</span>
+                </button>
+            </div>
+
+            <!-- القسم الثالث: بيانات البلاغ -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-clipboard-list"></i>
+                    </div>
+                    <div class="section-info">
+                        <h3>القسم الثالث: بيانات البلاغ</h3>
+                        <p>الاختصاص ونوع البلاغ</p>
+                    </div>
+                </div>
+
+                <div class="fields-grid">
+                    <div class="field-item">
+                        <label class="field-label">
+                            <span class="required-star">*</span> مركز الشرطة المختص
+                        </label>
+                        <select name="police_center" class="field-select" required>
+                            <option value="">-- اختر المركز --</option>
+                            <option value="مركز شرطة المجاز">مركز شرطة المجاز</option>
+                            <option value="مركز شرطة الغافية">مركز شرطة الغافية</option>
+                            <option value="مركز شرطة السيح">مركز شرطة السيح</option>
+                            <option value="مركز شرطة الحمرية">مركز شرطة الحمرية</option>
+                        </select>
+                    </div>
+
+                    <div class="field-item">
+                        <label class="field-label">
+                            <span class="required-star">*</span> نوع البلاغ
+                        </label>
+                        <select name="report_type" id="reportType" class="field-select" required>
+                            <option value="">-- اختر النوع --</option>
+                            <option value="احتيال">احتيال</option>
+                            <option value="سب">سب</option>
+                            <option value="خيانة الأمانة بالاختلاس">خيانة الأمانة بالاختلاس</option>
+                            <option value="خيانة الأمانة بالاستعمال">خيانة الأمانة بالاستعمال</option>
+                            <option value="اعتداء بالضرب">اعتداء بالضرب</option>
+                            <option value="إتلاف">إتلاف</option>
+                            <option value="تهديد">تهديد</option>
+                            <option value="تزوير">تزوير</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- القسم الرابع: تفاصيل البلاغ - الاحتيال -->
+            <div class="form-section" id="fraudDetailsSection" style="display: none;">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="section-info">
+                        <h3>القسم الرابع: تفاصيل البلاغ - الاحتيال</h3>
+                        <p>معلومات تفصيلية عن الواقعة</p>
+                    </div>
+                </div>
+
+                <div class="fields-grid">
+                    <div class="field-item full">
+                        <label class="field-label">1. ما هو موضوع بلاغك بالتفصيل؟</label>
+                        <textarea name="fraud_subject" class="field-textarea" placeholder="اشرح الموضوع..." rows="4"></textarea>
+                    </div>
+
+                    <div class="field-item full">
+                        <label class="field-label">2. تاريخ ووقت الواقعة</label>
+                        <div class="datetime-grid">
+                            <div class="datetime-field">
+                                <label class="datetime-label">
+                                    <i class="fas fa-calendar"></i> التاريخ
+                                </label>
+                                <input type="date" name="fraud_date" class="field-input">
+                            </div>
+                            <div class="datetime-field">
+                                <label class="datetime-label">
+                                    <i class="fas fa-clock"></i> الوقت
+                                </label>
+                                <input type="time" name="fraud_time" class="field-input">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field-item full">
+                        <label class="field-label">3. أين وقع الحادث؟ (مكان الواقعة)</label>
+                        <div class="location-wrapper">
+                            <div class="location-input-group">
+                                <input type="text" 
+                                       id="fraud_location" 
+                                       name="fraud_location" 
+                                       class="field-input" 
+                                       placeholder="ابحث عن العنوان أو اختر موقعك الحالي"
+                                       autocomplete="off">
+                                <button type="button" id="getCurrentLocation" class="location-btn" title="تحديد موقعي الحالي">
+                                    <i class="fas fa-location-arrow"></i>
+                                    <span>موقعي</span>
+                                </button>
+                            </div>
+                            <div id="locationMap" class="location-map hidden"></div>
+                            <input type="hidden" id="fraud_lat" name="fraud_lat">
+                            <input type="hidden" id="fraud_lng" name="fraud_lng">
+                    </div>
+                </div>
+
+                    <div class="field-item full">
+                        <label class="field-label">4. ما هي طبيعة علاقتك بالمشكو ضده؟</label>
+                        <input type="text" name="fraud_relationship" class="field-input" placeholder="مثال: صديق، شريك عمل">
+                    </div>
+
+                    <div class="field-item full">
+                        <label class="field-label">5. ما هو نوع الاتفاق الذي تم بينك وبين المشكو ضده؟</label>
+                        <div class="radio-options">
+                            <div class="radio-option">
+                                <input type="radio" name="fraud_agreement_type" value="شفهي" id="agreementVerbal">
+                                <label for="agreementVerbal" class="radio-btn">شفهي</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" name="fraud_agreement_type" value="مكتوب" id="agreementWritten">
+                                <label for="agreementWritten" class="radio-btn">مكتوب</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" name="fraud_agreement_type" value="عبر وسائل التواصل" id="agreementSocial">
+                                <label for="agreementSocial" class="radio-btn">عبر وسائل التواصل</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field-item full">
+                        <label class="field-label">6. هل قام المشكو ضده بالاستيلاء على مبلغ مالي؟</label>
+                        <div class="radio-options">
+                            <div class="radio-option">
+                                <input type="radio" name="fraud_money_seized" value="نعم" id="moneyYes">
+                                <label for="moneyYes" class="radio-btn">نعم</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" name="fraud_money_seized" value="لا" id="moneyNo">
+                                <label for="moneyNo" class="radio-btn">لا</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- إذا نعم: كم يقدر المبلغ -->
+                <div id="amountBox" class="conditional-box hidden">
+                    <div class="field-item">
+                        <label class="field-label">كم يقدر المبلغ الإجمالي المستولى عليه؟</label>
+                        <input type="number" name="fraud_amount" class="field-input" placeholder="0.00" min="0" step="0.01" dir="ltr">
+                    </div>
+
+                    <!-- 7. كيف تم تسليم المبلغ -->
+                    <div class="field-item" style="margin-top: 20px;">
+                        <label class="field-label">7. كيف تم تسليم المبلغ المالي للمشكو ضده؟</label>
+                        <div class="radio-options">
+                            <div class="radio-option">
+                                <input type="radio" name="fraud_payment_method" value="تحويل بنكي" id="paymentBank">
+                                <label for="paymentBank" class="radio-btn">تحويل بنكي</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" name="fraud_payment_method" value="حوالة مصرفية" id="paymentTransfer">
+                                <label for="paymentTransfer" class="radio-btn">حوالة مصرفية</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field-item" style="margin-top: 10px;">
+                        <div class="radio-options">
+                            <div class="radio-option">
+                                <input type="radio" name="fraud_payment_method" value="محفظة إلكترونية" id="paymentWallet">
+                                <label for="paymentWallet" class="radio-btn">محفظة إلكترونية</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" name="fraud_payment_method" value="سند قبض" id="paymentReceipt">
+                                <label for="paymentReceipt" class="radio-btn">سند قبض</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" name="fraud_payment_method" value="أخرى" id="paymentOther">
+                                <label for="paymentOther" class="radio-btn">أخرى</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- إذا تحويل بنكي -->
+                    <div id="bankDetails" class="hidden" style="margin-top: 20px;">
+                        <div class="fields-grid">
+                            <div class="field-item">
+                                <label class="field-label">اسم المصرف</label>
+                                <input type="text" name="fraud_bank_name" class="field-input" placeholder="اسم المصرف">
+                            </div>
+                            <div class="field-item">
+                                <label class="field-label">رقم الحساب أو رقم الآيبان</label>
+                                <input type="text" name="fraud_account_number" class="field-input" placeholder="رقم الحساب" dir="ltr">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- إذا أخرى -->
+                    <div id="otherPayment" class="hidden" style="margin-top: 20px;">
+                        <div class="field-item">
+                            <label class="field-label">اشرح طريقة التسليم</label>
+                            <textarea name="fraud_other_payment" class="field-textarea" rows="2" placeholder="وضح طريقة التسليم"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- إذا لا: ما هو الشيء المستولى عليه -->
+                <div id="itemBox" class="conditional-box hidden">
+                    <div class="field-item">
+                        <label class="field-label">ما هو نوع الممتلكات أو الخدمات المستولى عليها؟</label>
+                        <textarea name="fraud_item" class="field-textarea" rows="2" placeholder="وصف الممتلكات أو الخدمات"></textarea>
+                    </div>
+                </div>
+
+                <!-- 8. هل يوجد شهود -->
+                <div class="fields-grid" style="margin-top: 22px;">
+                    <div class="field-item full">
+                        <label class="field-label">8. هل يوجد شهود؟</label>
+                        <div class="radio-options">
+                            <div class="radio-option">
+                                <input type="radio" name="fraud_has_witnesses" value="نعم" id="witnessYes">
+                                <label for="witnessYes" class="radio-btn">نعم</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" name="fraud_has_witnesses" value="لا" id="witnessNo">
+                                <label for="witnessNo" class="radio-btn">لا</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="witnessBox" class="conditional-box hidden">
+                    <div class="field-item">
+                        <label class="field-label">ما هي بيانات الشهود وأرقام التواصل الخاصة بهم؟</label>
+                        <textarea name="fraud_witnesses" class="field-textarea" rows="3" placeholder="أدخل بيانات الشهود"></textarea>
+                    </div>
+                </div>
+
+                <!-- 9. هل لديك إثباتات -->
+                <div class="fields-grid" style="margin-top: 22px;">
+                    <div class="field-item full">
+                        <label class="field-label">9. هل لديك ما يثبت صحة ادعائك؟</label>
+                        <div class="radio-options">
+                            <div class="radio-option">
+                                <input type="radio" name="fraud_has_evidence" value="نعم" id="evidenceYes">
+                                <label for="evidenceYes" class="radio-btn">نعم</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" name="fraud_has_evidence" value="لا" id="evidenceNo">
+                                <label for="evidenceNo" class="radio-btn">لا</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="evidenceBox" class="conditional-box hidden">
+                    <div class="field-item">
+                        <label class="field-label">ما هي الإثباتات التي لديك؟</label>
+                        <textarea name="fraud_evidence" class="field-textarea" rows="3" placeholder="اذكر الإثباتات"></textarea>
+                    </div>
+                </div>
+
+                <!-- 10. أقوال إضافية -->
+                <div class="fields-grid" style="margin-top: 22px;">
+                    <div class="field-item full">
+                        <label class="field-label">10. هل لديك أي أقوال إضافية؟</label>
+                        <div class="radio-options">
+                            <div class="radio-option">
+                                <input type="radio" name="fraud_has_additional_statements" value="نعم" id="statementsYes">
+                                <label for="statementsYes" class="radio-btn">نعم</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" name="fraud_has_additional_statements" value="لا" id="statementsNo">
+                                <label for="statementsNo" class="radio-btn">لا</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="statementsBox" class="conditional-box hidden">
+                    <div class="field-item">
+                        <label class="field-label">أقوال إضافية</label>
+                        <textarea name="fraud_additional_statements" class="field-textarea" rows="3" placeholder="أدخل أقوالك الإضافية"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- القسم الخامس: الأدلة والإثباتات -->
+                <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-paperclip"></i>
+                    </div>
+                    <div class="section-info">
+                        <h3>القسم الخامس: الأدلة والإثباتات</h3>
+                        <p>إرفاق المستندات الداعمة</p>
+                    </div>
+                </div>
+
+                <div class="fields-grid">
+                    <div class="field-item">
+                        <label class="field-label">1. إثبات التحويل</label>
+                        <label for="transferProof" class="file-wrapper" id="transferBox">
+                            <input type="file" name="transfer_proof" id="transferProof" class="file-input-hidden" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                            <div class="file-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                            <div class="file-text">اختر ملف</div>
+                            <div class="file-hint">PDF, JPG, PNG</div>
+                            <div class="file-display" id="transferName"></div>
+                        </label>
+                        </div>
+
+                    <div class="field-item">
+                        <label class="field-label">2. إثبات الاتفاق أو الاحتيال</label>
+                        <label for="agreementProof" class="file-wrapper" id="agreementBox">
+                            <input type="file" name="agreement_proof" id="agreementProof" class="file-input-hidden" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                            <div class="file-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                            <div class="file-text">اختر ملف</div>
+                            <div class="file-hint">PDF, JPG, PNG</div>
+                            <div class="file-display" id="agreementName"></div>
+                        </label>
+                    </div>
+
+                    <div class="field-item full">
+                        <label class="field-label">3. الوكالة القانونية (إن وجدت)</label>
+                        <label for="legalPower" class="file-wrapper" id="legalBox">
+                            <input type="file" name="legal_power" id="legalPower" class="file-input-hidden" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                            <div class="file-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                            <div class="file-text">اختر ملف</div>
+                            <div class="file-hint">PDF, JPG, PNG</div>
+                            <div class="file-display" id="legalName"></div>
+                        </label>
+                    </div>
+                        </div>
+                    </div>
+
+            <!-- القسم السادس: الإقرار والتعهد -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-check-circle"></i>
+                        </div>
+                    <div class="section-info">
+                        <h3>القسم السادس: الإقرار والتعهد</h3>
+                        <p>إقرار بصحة البيانات</p>
+                        </div>
+                        </div>
+
+                <label class="checkbox-wrapper">
+                    <input type="checkbox" name="declaration" id="declaration" class="checkbox-input" required>
+                    <span class="checkbox-label">
+                        أقر بأن جميع المعلومات والبيانات المذكورة أعلاه صحيحة ودقيقة، وأتحمل كامل المسؤولية القانونية عن أي معلومات خاطئة أو مضللة.
+                    </span>
+                    </label>
+                </div>
+
+            <!-- Submit -->
+            <div class="submit-wrapper">
+                <button type="submit" class="submit-button" id="submitBtn">
+                    <i class="fas fa-paper-plane"></i>
+                    <span>إرسال البلاغ</span>
+                </button>
+            </div>
+
+        </div>
+
+    </form>
+
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    let partyCount = 0;
+
+    // Add Accused Party
+    const addAccusedBtn = document.getElementById('addAccusedBtn');
+    const accusedPartiesContainer = document.getElementById('accusedParties');
+
+    function createPartyCard(index) {
+        partyCount++;
+        const partyNumber = partyCount;
+
+        const card = document.createElement('div');
+        card.className = 'accused-party-card';
+        card.id = `party-${partyNumber}`;
+        card.innerHTML = `
+            <div class="party-card-header">
+                <div class="party-card-title">
+                    <span class="party-card-number">${partyNumber}</span>
+                    <span>المشكو في حقه</span>
+                </div>
+                <button type="button" class="remove-party-btn" onclick="removeParty(${partyNumber})">
+                    <i class="fas fa-trash"></i>
+                    <span>حذف</span>
+                </button>
+            </div>
+
+            <div class="field-item">
+                <label class="field-label">
+                    <span class="required-star">*</span> نوع الطرف
+                </label>
+                <div class="radio-options">
+                    <div class="radio-option">
+                        <input type="radio" name="accused_type_${partyNumber}" value="شخص" id="accusedPerson${partyNumber}">
+                        <label for="accusedPerson${partyNumber}" class="radio-btn">شخص</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" name="accused_type_${partyNumber}" value="مؤسسة" id="accusedOrg${partyNumber}">
+                        <label for="accusedOrg${partyNumber}" class="radio-btn">مؤسسة</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" name="accused_type_${partyNumber}" value="مجهول" id="accusedUnknown${partyNumber}">
+                        <label for="accusedUnknown${partyNumber}" class="radio-btn">مجهول</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- حقول الشخص/المجهول -->
+            <div id="personFields${partyNumber}" class="conditional-box hidden" style="margin-top: 20px;">
+                <div class="fields-grid">
+                    <div class="field-item full">
+                        <label class="field-label">اسم الطرف</label>
+                        <input type="text" name="accused_name_${partyNumber}" class="field-input" placeholder="الاسم الكامل">
+                    </div>
+
+                    <div class="field-item">
+                        <label class="field-label">نوع الوثيقة</label>
+                        <select name="accused_document_type_${partyNumber}" class="field-select">
+                            <option value="">-- اختر --</option>
+                            <option value="هوية">الهوية الإماراتية</option>
+                            <option value="جواز">جواز السفر</option>
+                            <option value="موحد">الرقم الموحد</option>
+                        </select>
+                    </div>
+
+                    <div class="field-item">
+                        <label class="field-label">الجنسية</label>
+                        <input type="text" name="accused_nationality_${partyNumber}" class="field-input" placeholder="الجنسية">
+                    </div>
+
+                    <div class="field-item">
+                        <label class="field-label">رقم الهاتف</label>
+                        <input type="tel" name="accused_phone_${partyNumber}" class="field-input" placeholder="05XXXXXXXX" dir="ltr">
+                    </div>
+
+                    <div class="field-item">
+                        <label class="field-label">العنوان</label>
+                        <input type="text" name="accused_address_${partyNumber}" class="field-input" placeholder="العنوان">
+                    </div>
+                </div>
+            </div>
+
+            <!-- حقول المؤسسة -->
+            <div id="orgFields${partyNumber}" class="conditional-box hidden" style="margin-top: 20px;">
+                <div class="fields-grid">
+                    <div class="field-item full">
+                        <label class="field-label">اسم المؤسسة</label>
+                        <input type="text" name="accused_company_name_${partyNumber}" class="field-input" placeholder="اسم المؤسسة">
+                    </div>
+
+                    <div class="field-item">
+                        <label class="field-label">رقم الهاتف</label>
+                        <input type="tel" name="accused_company_phone_${partyNumber}" class="field-input" placeholder="04XXXXXXX" dir="ltr">
+                    </div>
+
+                    <div class="field-item">
+                        <label class="field-label">العنوان</label>
+                        <input type="text" name="accused_company_address_${partyNumber}" class="field-input" placeholder="العنوان">
+                    </div>
+                </div>
+            </div>
+        `;
+
+        accusedPartiesContainer.appendChild(card);
+
+        // Add event listeners for this party
+        const radios = document.querySelectorAll(`input[name="accused_type_${partyNumber}"]`);
+        const personFields = document.getElementById(`personFields${partyNumber}`);
+        const orgFields = document.getElementById(`orgFields${partyNumber}`);
+
+        radios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                personFields.classList.add('hidden');
+                orgFields.classList.add('hidden');
+
+                if (this.value === 'شخص' || this.value === 'مجهول') {
+                    personFields.classList.remove('hidden');
+                } else if (this.value === 'مؤسسة') {
+                    orgFields.classList.remove('hidden');
+                }
+            });
+        });
+    }
+
+    // Add first party automatically
+    createPartyCard(1);
+
+    // Add party button click
+    addAccusedBtn.addEventListener('click', function() {
+        createPartyCard(partyCount + 1);
+    });
+
+    // Remove party function (global)
+    window.removeParty = function(partyNumber) {
+        const card = document.getElementById(`party-${partyNumber}`);
+        if (card) {
+            card.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => {
+                card.remove();
+                // Update party numbers
+                updatePartyNumbers();
+            }, 300);
+        }
+    };
+
+    function updatePartyNumbers() {
+        const cards = accusedPartiesContainer.querySelectorAll('.accused-party-card');
+        cards.forEach((card, index) => {
+            const numberEl = card.querySelector('.party-card-number');
+            if (numberEl) {
+                numberEl.textContent = index + 1;
+            }
+        });
+    }
+
+    // Google Maps Location Picker
+    let map, marker, autocomplete, geocoder;
+
+    function initMap() {
+        const defaultLocation = { lat: 25.3463, lng: 55.4209 }; // الشارقة
+        
+        geocoder = new google.maps.Geocoder();
+        
+        // Initialize autocomplete
+        const locationInput = document.getElementById('fraud_location');
+        autocomplete = new google.maps.places.Autocomplete(locationInput, {
+            componentRestrictions: { country: 'ae' },
+            fields: ['formatted_address', 'geometry', 'name']
+        });
+
+        autocomplete.addListener('place_changed', function() {
+            const place = autocomplete.getPlace();
+            
+            if (!place.geometry) {
+                return;
+            }
+
+            const lat = place.geometry.location.lat();
+            const lng = place.geometry.location.lng();
+            
+            document.getElementById('fraud_lat').value = lat;
+            document.getElementById('fraud_lng').value = lng;
+            document.getElementById('fraud_location').value = place.formatted_address || place.name;
+
+            // Show map
+            showMapWithMarker(lat, lng);
+        });
+    }
+
+    function showMapWithMarker(lat, lng) {
+        const mapDiv = document.getElementById('locationMap');
+        mapDiv.classList.remove('hidden');
+
+        if (!map) {
+            map = new google.maps.Map(mapDiv, {
+                zoom: 15,
+                center: { lat: lat, lng: lng }
+            });
+        } else {
+            map.setCenter({ lat: lat, lng: lng });
+        }
+
+        if (marker) {
+            marker.setMap(null);
+        }
+
+        marker = new google.maps.Marker({
+            position: { lat: lat, lng: lng },
+            map: map,
+            animation: google.maps.Animation.DROP
+        });
+    }
+
+    // Get Current Location
+    const getCurrentLocationBtn = document.getElementById('getCurrentLocation');
+    if (getCurrentLocationBtn) {
+        getCurrentLocationBtn.addEventListener('click', function() {
+            if (!navigator.geolocation) {
+                alert('الموقع الجغرافي غير مدعوم في متصفحك');
+                return;
+            }
+
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>جاري التحميل...</span>';
+            this.disabled = true;
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+
+                    // Reverse geocode to get address
+                    geocoder.geocode({ location: { lat: lat, lng: lng } }, (results, status) => {
+                        if (status === 'OK' && results[0]) {
+                            document.getElementById('fraud_location').value = results[0].formatted_address;
+                            document.getElementById('fraud_lat').value = lat;
+                            document.getElementById('fraud_lng').value = lng;
+
+                            showMapWithMarker(lat, lng);
+                        }
+
+                        getCurrentLocationBtn.innerHTML = '<i class="fas fa-location-arrow"></i><span>موقعي</span>';
+                        getCurrentLocationBtn.disabled = false;
+                    });
+                },
+                (error) => {
+                    alert('لم نتمكن من الوصول إلى موقعك. يرجى التأكد من السماح بالوصول للموقع.');
+                    getCurrentLocationBtn.innerHTML = '<i class="fas fa-location-arrow"></i><span>موقعي</span>';
+                    getCurrentLocationBtn.disabled = false;
+                }
+            );
+        });
+    }
+
+    // Initialize map when Google Maps API is loaded
+    if (typeof google !== 'undefined' && google.maps) {
+        initMap();
+    } else {
+        window.addEventListener('load', function() {
+            if (typeof google !== 'undefined' && google.maps) {
+                initMap();
+            }
+        });
+    }
+
+    // Report Type Change
+    const reportType = document.getElementById('reportType');
+    const fraudSection = document.getElementById('fraudDetailsSection');
+    
+    reportType.addEventListener('change', function() {
+        if (this.value === 'احتيال') {
+            fraudSection.style.display = 'block';
+        } else {
+            fraudSection.style.display = 'none';
+        }
+    });
+
+    // Money Seized
+    const moneyRadios = document.querySelectorAll('input[name="fraud_money_seized"]');
+    const amountBox = document.getElementById('amountBox');
+    const itemBox = document.getElementById('itemBox');
+
+    moneyRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'نعم') {
+                amountBox.classList.remove('hidden');
+                itemBox.classList.add('hidden');
+            } else {
+                amountBox.classList.add('hidden');
+                itemBox.classList.remove('hidden');
+            }
+        });
+    });
+
+    // Payment Method
+    const paymentRadios = document.querySelectorAll('input[name="fraud_payment_method"]');
+    const bankDetails = document.getElementById('bankDetails');
+    const otherPayment = document.getElementById('otherPayment');
+
+    paymentRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            bankDetails.classList.add('hidden');
+            otherPayment.classList.add('hidden');
+
+            if (this.value === 'تحويل بنكي') {
+                bankDetails.classList.remove('hidden');
+            } else if (this.value === 'أخرى') {
+                otherPayment.classList.remove('hidden');
+            }
+        });
+    });
+
+    // Witnesses
+    const witnessRadios = document.querySelectorAll('input[name="fraud_has_witnesses"]');
+    const witnessBox = document.getElementById('witnessBox');
+
+    witnessRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'نعم') {
+                witnessBox.classList.remove('hidden');
+            } else {
+                witnessBox.classList.add('hidden');
+            }
+        });
+    });
+
+    // Evidence
+    const evidenceRadios = document.querySelectorAll('input[name="fraud_has_evidence"]');
+    const evidenceBox = document.getElementById('evidenceBox');
+
+    evidenceRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'نعم') {
+                evidenceBox.classList.remove('hidden');
+            } else {
+                evidenceBox.classList.add('hidden');
+            }
+        });
+    });
+
+    // Statements
+    const statementsRadios = document.querySelectorAll('input[name="fraud_has_additional_statements"]');
+    const statementsBox = document.getElementById('statementsBox');
+
+    statementsRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'نعم') {
+                statementsBox.classList.remove('hidden');
+            } else {
+                statementsBox.classList.add('hidden');
+            }
+        });
+    });
+
+    // Files
+    const files = [
+        { input: 'transferProof', box: 'transferBox', name: 'transferName' },
+        { input: 'agreementProof', box: 'agreementBox', name: 'agreementName' },
+        { input: 'legalPower', box: 'legalBox', name: 'legalName' }
+    ];
+
+    files.forEach(file => {
+        const input = document.getElementById(file.input);
+        const box = document.getElementById(file.box);
+        const nameDisplay = document.getElementById(file.name);
+
+        if (input && box && nameDisplay) {
+            input.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    nameDisplay.textContent = '✓ ' + this.files[0].name;
+                    box.classList.add('uploaded');
+                } else {
+                    nameDisplay.textContent = '';
+                    box.classList.remove('uploaded');
+                }
+            });
+        }
+    });
+
+    // Form Submit
+    const form = document.getElementById('reportForm');
+    const submitBtn = document.getElementById('submitBtn');
+
+    if (form && submitBtn) {
+        form.addEventListener('submit', function(e) {
+            const declaration = document.getElementById('declaration');
+            if (!declaration.checked) {
+                e.preventDefault();
+                alert('يرجى الموافقة على الإقرار والتعهد قبل الإرسال');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>جاري الإرسال...</span>';
+        });
+    }
+
+});
+</script>
+{% endblock %}

@@ -15,27 +15,27 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Load environment variables from .env file
+import os
+from dotenv import load_dotenv
+
+# تحميل متغيرات البيئة من ملف .env إذا كان موجوداً
+env_path = BASE_DIR / '.env'
+if env_path.exists():
+    load_dotenv(env_path)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # في الإنتاج، استخدم متغيرات البيئة بدلاً من هذا
-import os
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'oai(by$3xw6h+!58r6*%9whw!*d+xuy-^6siw9vr)%@v^aop^@')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
-# للتطوير المحلي والإنتاج
-ALLOWED_HOSTS = [
-    'localhost', 
-    '127.0.0.1', 
-    '192.168.50.149',
-    '.ondigitalocean.app',
-    'buhairah-oqh9h.ondigitalocean.app',
-    '*'
-]
+# ALLOWED_HOSTS - للإنتاج والتطوير
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 
 # Application definition
@@ -52,7 +52,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # للملفات الثابتة
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # للملفات الثابتة في الإنتاج
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -64,10 +64,6 @@ MIDDLEWARE = [
     'services.middleware.RequestLoggingMiddleware',
     'services.middleware.BlockSuspiciousIPMiddleware',
 ]
-
-# Whitenoise settings - استخدام الإعداد البسيط بدون ضغط
-STATICFILES_STORAGE = 'whitenoise.storage.StaticFilesStorage'
-WHITENOISE_USE_FINDERS = True
 
 ROOT_URLCONF = 'gov_services.urls'
 
@@ -151,6 +147,9 @@ STATICFILES_DIRS = [
     BASE_DIR / "services" / "static",
 ]
 
+# WhiteNoise settings للملفات الثابتة في الإنتاج
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
@@ -191,16 +190,12 @@ CSRF_COOKIE_DOMAIN = None
 CSRF_HEADER_NAME = 'HTTP_X_CSRFTOKEN'
 CSRF_FAILURE_VIEW = 'django.views.csrf.csrf_failure'
 
-# النطاقات الموثوقة - شامل جداً
+# النطاقات الموثوقة - محلي فقط
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:8000',
     'http://127.0.0.1:8000',
     'http://localhost',
     'http://127.0.0.1',
-    'http://buhairah-oqh9h.ondigitalocean.app',
-    'https://buhairah-oqh9h.ondigitalocean.app',
-    'https://*.ondigitalocean.app',
-    'http://*.ondigitalocean.app',
 ]
 
 # XSS Protection
@@ -406,9 +401,9 @@ else:
         }
 
 # ========== Email Configuration ==========
-# إعدادات البريد الإلكتروني (Gmail)
+# إعدادات البريد الإلكتروني (Outlook/Microsoft 365)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST = 'smtp.office365.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
@@ -424,67 +419,5 @@ if not EMAIL_HOST_USER or not EMAIL_HOST_PASSWORD:
         EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
     # في الإنتاج: سيتم استخدام SMTP الحقيقي من متغيرات البيئة
 
-# ========== Production Settings ==========
-if 'DATABASE_URL' in os.environ:
-    import dj_database_url
-    
-    DEBUG = False
-    
-    # Allowed Hosts - يدعم DigitalOcean و AWS Lightsail وأي دومين مخصص
-    allowed_hosts_env = os.environ.get('ALLOWED_HOSTS', '')
-    if allowed_hosts_env:
-        ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_env.split(',')]
-    else:
-        # Default hosts
-        ALLOWED_HOSTS = [
-            '.ondigitalocean.app',
-            '*.ondigitalocean.app',
-            '.amazonaws.com',
-            '*.lightsail.aws.amazon.com',
-            'localhost',
-            '127.0.0.1',
-        ]
-    
-    # CSRF Trusted Origins
-    csrf_origins_env = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
-    if csrf_origins_env:
-        CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_origins_env.split(',')]
-    else:
-        # Default origins
-        CSRF_TRUSTED_ORIGINS = [
-            'https://*.ondigitalocean.app',
-            'https://*.amazonaws.com',
-            'https://*.lightsail.aws.amazon.com',
-        ]
-    
-    # Database
-    DATABASES = {
-        'default': dj_database_url.config(
-            conn_max_age=600,
-            conn_health_checks=True,
-        )
-    }
-    
-    # Security Settings - إعدادات مرنة لتجنب Redirect Loop
-    # تعطيل SSL redirect لأن DigitalOcean يتعامل مع HTTPS
-    SECURE_SSL_REDIRECT = False  # DigitalOcean App Platform يتعامل مع SSL
-    
-    # إضافة Proxy SSL Header لـ DigitalOcean
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    
-    # Session/Cookie Settings - مرنة
-    SESSION_COOKIE_SECURE = False  # تعمل مع HTTP و HTTPS
-    CSRF_COOKIE_SECURE = False  # تعمل مع HTTP و HTTPS
-    SESSION_COOKIE_SAMESITE = 'Lax'
-    CSRF_COOKIE_SAMESITE = 'Lax'
-    SESSION_COOKIE_HTTPONLY = True
-    CSRF_COOKIE_HTTPONLY = False
-    
-    # XSS Protection
-    SECURE_BROWSER_XSS_FILTER = True
-    SECURE_CONTENT_TYPE_NOSNIFF = True
-    X_FRAME_OPTIONS = 'SAMEORIGIN'  # تغيير من DENY إلى SAMEORIGIN
-    
-    # Email في الإنتاج
-    if EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
-        EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# ========== ملاحظة: تم إزالة إعدادات الإنتاج ==========
+# المشروع الآن محلي بالكامل (Local Development Only)

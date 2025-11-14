@@ -523,6 +523,7 @@
             }
 
             .services-grid {
+                grid-template-columns: repeat(2, 1fr);
                 gap: 30px;
             }
 
@@ -656,6 +657,7 @@
             }
 
             .services-grid {
+                grid-template-columns: 1fr;
                 gap: 25px;
             }
 
@@ -799,6 +801,7 @@
             }
 
             .services-grid {
+                grid-template-columns: 1fr;
                 gap: 20px;
             }
 
@@ -957,6 +960,42 @@
                         <a href="/check-report-status/" class="service-link">
                             <i class="fas fa-arrow-left"></i>
                             استعلام الآن
+                        </a>
+                </div>
+        </div>
+
+                <div class="service-card">
+                    <div class="service-header">
+                    <div class="service-icon">
+                        <i class="fas fa-gavel"></i>
+                    </div>
+                        <h3 class="service-title">فتح بلاغ جنائي</h3>
+                    </div>
+                    <div class="service-info">
+                    <p class="service-description">
+                            قدم بلاغك الجنائي بشكل فوري وآمن. نحن نوفر لك خدمة متخصصة للتعامل مع القضايا الجنائية بسرعة واحترافية.
+                    </p>
+                        <a href="{% url 'services:criminal_report' %}" class="service-link">
+                            <i class="fas fa-arrow-left"></i>
+                            فتح بلاغ
+                        </a>
+                </div>
+        </div>
+
+                <div class="service-card">
+                    <div class="service-header">
+                    <div class="service-icon">
+                        <i class="fas fa-university"></i>
+                    </div>
+                        <h3 class="service-title">مخاطبة البنوك</h3>
+                    </div>
+                    <div class="service-info">
+                    <p class="service-description">
+                            خدمة مخاطبة البنوك لتسهيل إجراءاتك المصرفية. نوفر لك التواصل المباشر مع المؤسسات المصرفية لإتمام معاملاتك بسرعة وأمان.
+                    </p>
+                        <a href="/interior-ministry/bank-contact/" class="service-link">
+                            <i class="fas fa-arrow-left"></i>
+                            مخاطبة البنوك
                         </a>
                 </div>
         </div>
